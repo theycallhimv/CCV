@@ -1,123 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Currency Converter</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Currency Converter — Stylish</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f3f4f7;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-    .container {
-        background: white;
-        width: 420px;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
-        text-align: center;
-    }
-    h2 {
-        margin-bottom: 20px;
-        color: #333;
-    }
-    select, input {
-        width: 100%;
-        padding: 12px;
-        margin: 10px 0;
-        border-radius: 8px;
-        border: 1px solid #aaa;
-        font-size: 16px;
-    }
-    input[type="text"] {
-        margin-bottom: 5px;
-    }
-    button {
-        width: 100%;
-        padding: 12px;
-        background: #007bff;
-        border: none;
-        font-size: 18px;
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-    button:hover { background: #005dc1; }
-    .result {
-        margin-top: 15px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #222;
-    }
-    canvas { margin-top: 20px; }
+  :root{
+    --bg:#0b1220;
+    --card: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.06);
+    --accent: #4f8cff;
+    --accent-2: #7af0c7;
+    --soft:#aab6d6;
+  }
+
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071028 0%, #081627 70%);color:#e6eefb;overflow-x:hidden}
+
+  /* rotating globe background */
+  .globe-wrap{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    display:flex; justify-content:center; align-items:center; opacity:0.10;
+    filter: blur(2px) saturate(1.2);
+  }
+  .globe {
+    width:140vmax; height:140vmax; /* very large so edges show on all screens */
+    background-image: url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.png");
+    background-repeat: repeat;
+    background-size:contain;
+    transform-origin:50% 50%;
+    animation: globeRotate 60s linear infinite;
+    opacity:0.9;
+    mix-blend-mode:screen;
+    border-radius:50%;
+  }
+  @keyframes globeRotate {
+    from { transform: rotate(0deg) translateZ(0); }
+    to   { transform: rotate(360deg) translateZ(0); }
+  }
+
+  /* container */
+  .page {
+    position:relative; z-index:2;
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:32px;
+  }
+
+  .card {
+    width:min(980px,96%);
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    gap:26px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:16px;
+    padding:22px;
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(10px) saturate(1.1);
+    box-shadow: 0 10px 40px rgba(4,10,20,0.6);
+    align-items:start;
+  }
+
+  /* left column: converter */
+  .left {
+    padding:18px;
+    border-radius:12px;
+  }
+
+  h1{margin:0 0 8px 0; font-size:20px; font-weight:600; color:#eaf2ff}
+  p.lead{margin:0 0 18px 0; color:var(--soft); font-size:13px}
+
+  label{display:block; font-size:12px; color:var(--soft); margin-top:10px; margin-bottom:6px}
+  .search {
+    display:flex; gap:8px; margin-bottom:8px;
+  }
+  .search input[type="text"]{
+    flex:1; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02); color: #eaf2ff; outline:none;
+  }
+  select {
+    width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02); color:#eaf2ff; font-size:14px;
+  }
+  input[type="number"]{
+    width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02); color:#eaf2ff; font-size:16px;
+    margin-top:8px;
+  }
+
+  .controls {
+    display:flex; gap:10px; margin-top:12px; align-items:center;
+  }
+  .btn {
+    background: linear-gradient(90deg,var(--accent), #2aa7ff 60%); border:none; color:white;
+    padding:12px 16px; border-radius:10px; cursor:pointer; font-weight:600;
+    box-shadow: 0 8px 18px rgba(78,140,255,0.12);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .btn:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(78,140,255,0.18) }
+  .btn.secondary {
+    background: rgba(255,255,255,0.03); color:var(--soft); font-weight:600;
+    border:1px solid rgba(255,255,255,0.04);
+  }
+
+  .swap-btn {display:inline-flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:10px;}
+
+  .result {
+    margin-top:14px; font-size:16px; color:#dff7ff; font-weight:600;
+    padding:12px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+    border:1px solid rgba(255,255,255,0.03);
+  }
+
+  /* right column: chart + history */
+  .right {
+    padding:18px;
+    display:flex; flex-direction:column; gap:12px;
+    min-height:320px;
+  }
+
+  .chart-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:12px; border-radius:12px; height:100%;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+
+  canvas { width:100% !important; height:260px !important; }
+
+  .history {
+    margin-top:6px; max-height:160px; overflow:auto; padding:10px; border-radius:10px;
+    background: rgba(255,255,255,0.01); border:1px dashed rgba(255,255,255,0.02);
+    color:var(--soft); font-size:13px;
+  }
+  .history-item { padding:8px; border-radius:8px; margin-bottom:6px; background: rgba(255,255,255,0.01); }
+  .hint { font-size:12px; color:var(--soft); margin-top:8px }
+
+  /* responsive */
+  @media (max-width:880px){
+    .card { grid-template-columns: 1fr; }
+    canvas{ height:200px !important }
+  }
 </style>
 </head>
 <body>
-<div class="container">
-    <h2>Currency Converter</h2>
 
-    <input type="text" id="searchInput1" placeholder="Search input currency...">
-    <select id="inputCurrency" size="5"></select>
-
-    <input type="text" id="searchInput2" placeholder="Search output currency...">
-    <select id="outputCurrency" size="5"></select>
-
-    <input type="number" id="amount" placeholder="Enter amount">
-    <button onclick="convert()">Convert</button>
-    <div class="result" id="result"></div>
-    <canvas id="currencyChart" width="400" height="200"></canvas>
+<!-- Rotating globe background -->
+<div class="globe-wrap" aria-hidden="true">
+  <div class="globe" role="img" aria-label="rotating globe background"></div>
 </div>
 
+<div class="page">
+  <div class="card">
+
+    <!-- LEFT: Converter -->
+    <div class="left">
+      <h1>🌍 Currency Converter</h1>
+      <p class="lead">Fast offline conversions using your rate table — animated globe & comparison chart included.</p>
+
+      <label for="searchFrom">Search input currency</label>
+      <div class="search">
+        <input id="searchFrom" placeholder="Type code or country (e.g. USD or India)" />
+        <button class="btn secondary swap-btn" id="swapBtn" title="Swap currencies">🔁</button>
+      </div>
+      <select id="fromSelect" size="6" aria-label="From currency"></select>
+
+      <label for="searchTo">Search output currency</label>
+      <div class="search">
+        <input id="searchTo" placeholder="Type code or country (e.g. INR or Japan)" />
+        <button class="btn secondary" id="favoriteBtn" title="Add/Remove favorite">★</button>
+      </div>
+      <select id="toSelect" size="6" aria-label="To currency"></select>
+
+      <label for="amount">Amount</label>
+      <input id="amount" type="number" placeholder="Enter amount (e.g. 100)" />
+
+      <div class="controls">
+        <button class="btn" id="convertBtn">Convert</button>
+        <button class="btn secondary" id="clearHistoryBtn">Clear</button>
+      </div>
+
+      <div class="result" id="resultText">Enter values and click Convert</div>
+      <div class="hint">Tip: click a history item to load that conversion</div>
+    </div>
+
+    <!-- RIGHT: Chart + History -->
+    <div class="right">
+      <div class="chart-card">
+        <canvas id="chartCanvas" aria-label="conversion chart"></canvas>
+      </div>
+
+      <div class="history" id="historyList">
+        <!-- conversion history -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+/* -------------------------
+   Data: currency + rates
+   (Copied from your C program)
+-------------------------- */
 const currencyData = [
-{code:"USD", country:"United States", flag:"🇺🇸"}, {code:"EUR", country:"European Union", flag:"🇪🇺"}, {code:"JPY", country:"Japan", flag:"🇯🇵"},
-{code:"GBP", country:"United Kingdom", flag:"🇬🇧"}, {code:"AUD", country:"Australia", flag:"🇦🇺"}, {code:"CAD", country:"Canada", flag:"🇨🇦"},
-{code:"CHF", country:"Switzerland", flag:"🇨🇭"}, {code:"CNY", country:"China", flag:"🇨🇳"}, {code:"HKD", country:"Hong Kong", flag:"🇭🇰"},
-{code:"NZD", country:"New Zealand", flag:"🇳🇿"}, {code:"SEK", country:"Sweden", flag:"🇸🇪"}, {code:"KRW", country:"South Korea", flag:"🇰🇷"},
-{code:"SGD", country:"Singapore", flag:"🇸🇬"}, {code:"NOK", country:"Norway", flag:"🇳🇴"}, {code:"MXN", country:"Mexico", flag:"🇲🇽"},
-{code:"INR", country:"India", flag:"🇮🇳"}, {code:"RUB", country:"Russia", flag:"🇷🇺"}, {code:"ZAR", country:"South Africa", flag:"🇿🇦"},
-{code:"TRY", country:"Turkey", flag:"🇹🇷"}, {code:"BRL", country:"Brazil", flag:"🇧🇷"}, {code:"TWD", country:"Taiwan", flag:"🇹🇼"},
-{code:"DKK", country:"Denmark", flag:"🇩🇰"}, {code:"PLN", country:"Poland", flag:"🇵🇱"}, {code:"THB", country:"Thailand", flag:"🇹🇭"},
-{code:"IDR", country:"Indonesia", flag:"🇮🇩"}, {code:"HUF", country:"Hungary", flag:"🇭🇺"}, {code:"CZK", country:"Czech Republic", flag:"🇨🇿"},
-{code:"ILS", country:"Israel", flag:"🇮🇱"}, {code:"CLP", country:"Chile", flag:"🇨🇱"}, {code:"PHP", country:"Philippines", flag:"🇵🇭"},
-{code:"AED", country:"UAE", flag:"🇦🇪"}, {code:"COP", country:"Colombia", flag:"🇨🇴"}, {code:"SAR", country:"Saudi Arabia", flag:"🇸🇦"},
-{code:"MYR", country:"Malaysia", flag:"🇲🇾"}, {code:"RON", country:"Romania", flag:"🇷🇴"}, {code:"PKR", country:"Pakistan", flag:"🇵🇰"},
-{code:"QAR", country:"Qatar", flag:"🇶🇦"}, {code:"KWD", country:"Kuwait", flag:"🇰🇼"}, {code:"NGN", country:"Nigeria", flag:"🇳🇬"},
-{code:"BDT", country:"Bangladesh", flag:"🇧🇩"}, {code:"EGP", country:"Egypt", flag:"🇪🇬"}, {code:"VND", country:"Vietnam", flag:"🇻🇳"},
-{code:"KZT", country:"Kazakhstan", flag:"🇰🇿"}, {code:"ARS", country:"Argentina", flag:"🇦🇷"}, {code:"DZD", country:"Algeria", flag:"🇩🇿"},
-{code:"MAD", country:"Morocco", flag:"🇲🇦"}, {code:"PEN", country:"Peru", flag:"🇵🇪"}, {code:"UAH", country:"Ukraine", flag:"🇺🇦"},
-{code:"IQD", country:"Iraq", flag:"🇮🇶"}, {code:"UZS", country:"Uzbekistan", flag:"🇺🇿"}, {code:"GHS", country:"Ghana", flag:"🇬🇭"},
-{code:"XOF", country:"West Africa", flag:"🌍"}, {code:"XAF", country:"Central Africa", flag:"🌍"}, {code:"KES", country:"Kenya", flag:"🇰🇪"},
-{code:"TND", country:"Tunisia", flag:"🇹🇳"}, {code:"BHD", country:"Bahrain", flag:"🇧🇭"}, {code:"OMR", country:"Oman", flag:"🇴🇲"},
-{code:"LKR", country:"Sri Lanka", flag:"🇱🇰"}, {code:"MMK", country:"Myanmar", flag:"🇲🇲"}, {code:"ETB", country:"Ethiopia", flag:"🇪🇹"},
-{code:"BGN", country:"Bulgaria", flag:"🇧🇬"}, {code:"HRK", country:"Croatia", flag:"🇭🇷"}, {code:"CRC", country:"Costa Rica", flag:"🇨🇷"},
-{code:"GTQ", country:"Guatemala", flag:"🇬🇹"}, {code:"PAB", country:"Panama", flag:"🇵🇦"}, {code:"UYU", country:"Uruguay", flag:"🇺🇾"},
-{code:"BWP", country:"Botswana", flag:"🇧🇼"}, {code:"NAD", country:"Namibia", flag:"🇳🇦"}, {code:"BND", country:"Brunei", flag:"🇧🇳"},
-{code:"SRD", country:"Suriname", flag:"🇸🇷"}, {code:"BZD", country:"Belize", flag:"🇧🇿"}, {code:"JMD", country:"Jamaica", flag:"🇯🇲"},
-{code:"TTD", country:"Trinidad & Tobago", flag:"🇹🇹"}, {code:"BSD", country:"Bahamas", flag:"🇧🇸"}, {code:"ALL", country:"Albania", flag:"🇦🇱"},
-{code:"MKD", country:"North Macedonia", flag:"🇲🇰"}, {code:"GEL", country:"Georgia", flag:"🇬🇪"}, {code:"MDL", country:"Moldova", flag:"🇲🇩"},
-{code:"AZN", country:"Azerbaijan", flag:"🇦🇿"}, {code:"AMD", country:"Armenia", flag:"🇦🇲"}, {code:"KYD", country:"Cayman Islands", flag:"🇰🇾"},
-{code:"MUR", country:"Mauritius", flag:"🇲🇺"}, {code:"MGA", country:"Madagascar", flag:"🇲🇬"}, {code:"MWK", country:"Malawi", flag:"🇲🇼"},
-{code:"ZMW", country:"Zambia", flag:"🇿🇲"}, {code:"BBD", country:"Barbados", flag:"🇧🇧"}, {code:"SCR", country:"Seychelles", flag:"🇸🇨"},
-{code:"NPR", country:"Nepal", flag:"🇳🇵"}, {code:"KGS", country:"Kyrgyzstan", flag:"🇰🇬"}, {code:"LAK", country:"Laos", flag:"🇱🇦"},
-{code:"KHR", country:"Cambodia", flag:"🇰🇭"}, {code:"YER", country:"Yemen", flag:"🇾🇪"}, {code:"AFN", country:"Afghanistan", flag:"🇦🇫"},
-{code:"IRR", country:"Iran", flag:"🇮🇷"}, {code:"SDG", country:"Sudan", flag:"🇸🇩"}, {code:"LYD", country:"Libya", flag:"🇱🇾"},
-{code:"CDF", country:"DR Congo", flag:"🇨🇩"}, {code:"BIF", country:"Burundi", flag:"🇧🇮"}, {code:"RWF", country:"Rwanda", flag:"🇷🇼"},
-{code:"DJF", country:"Djibouti", flag:"🇩🇯"}, {code:"SLL", country:"Sierra Leone", flag:"🇸🇱"}, {code:"GNF", country:"Guinea", flag:"🇬🇳"},
-{code:"MZN", country:"Mozambique", flag:"🇲🇿"}, {code:"SZL", country:"Eswatini", flag:"🇸🇿"}, {code:"LSL", country:"Lesotho", flag:"🇱🇸"},
-{code:"PGK", country:"Papua New Guinea", flag:"🇵🇬"}, {code:"FJD", country:"Fiji", flag:"🇫🇯"}, {code:"TOP", country:"Tonga", flag:"🇹🇴"},
-{code:"WST", country:"Samoa", flag:"🇼🇸"}, {code:"VUV", country:"Vanuatu", flag:"🇻🇺"}, {code:"HTG", country:"Haiti", flag:"🇭🇹"},
-{code:"HNL", country:"Honduras", flag:"🇭🇳"}, {code:"NIO", country:"Nicaragua", flag:"🇳🇮"}, {code:"BOB", country:"Bolivia", flag:"🇧🇴"},
-{code:"PYG", country:"Paraguay", flag:"🇵🇾"}, {code:"GYD", country:"Guyana", flag:"🇬🇾"}, {code:"SOS", country:"Somalia", flag:"🇸🇴"},
-{code:"BTN", country:"Bhutan", flag:"🇧🇹"}, {code:"TJS", country:"Tajikistan", flag:"🇹🇯"}, {code:"ISK", country:"Iceland", flag:"🇮🇸"},
-{code:"FKP", country:"Falkland Islands", flag:"🇫🇰"}, {code:"SHP", country:"Saint Helena", flag:"🇸🇭"}, {code:"GIP", country:"Gibraltar", flag:"🇬🇮"},
-{code:"ANG", country:"Curaçao", flag:"🇨🇼"}, {code:"AWG", country:"Aruba", flag:"🇦🇼"}, {code:"ERN", country:"Eritrea", flag:"🇪🇷"}
+{code:"USD", country:"United States", flag:"🇺🇸"},
+{code:"EUR", country:"European Union", flag:"🇪🇺"},
+{code:"JPY", country:"Japan", flag:"🇯🇵"},
+{code:"GBP", country:"United Kingdom", flag:"🇬🇧"},
+{code:"AUD", country:"Australia", flag:"🇦🇺"},
+{code:"CAD", country:"Canada", flag:"🇨🇦"},
+{code:"CHF", country:"Switzerland", flag:"🇨🇭"},
+{code:"CNY", country:"China", flag:"🇨🇳"},
+{code:"HKD", country:"Hong Kong", flag:"🇭🇰"},
+{code:"NZD", country:"New Zealand", flag:"🇳🇿"},
+{code:"SEK", country:"Sweden", flag:"🇸🇪"},
+{code:"KRW", country:"South Korea", flag:"🇰🇷"},
+{code:"SGD", country:"Singapore", flag:"🇸🇬"},
+{code:"NOK", country:"Norway", flag:"🇳🇴"},
+{code:"MXN", country:"Mexico", flag:"🇲🇽"},
+{code:"INR", country:"India", flag:"🇮🇳"},
+{code:"RUB", country:"Russia", flag:"🇷🇺"},
+{code:"ZAR", country:"South Africa", flag:"🇿🇦"},
+{code:"TRY", country:"Turkey", flag:"🇹🇷"},
+{code:"BRL", country:"Brazil", flag:"🇧🇷"},
+{code:"TWD", country:"Taiwan", flag:"🇹🇼"},
+{code:"DKK", country:"Denmark", flag:"🇩🇰"},
+{code:"PLN", country:"Poland", flag:"🇵🇱"},
+{code:"THB", country:"Thailand", flag:"🇹🇭"},
+{code:"IDR", country:"Indonesia", flag:"🇮🇩"},
+{code:"HUF", country:"Hungary", flag:"🇭🇺"},
+{code:"CZK", country:"Czech Republic", flag:"🇨🇿"},
+{code:"ILS", country:"Israel", flag:"🇮🇱"},
+{code:"CLP", country:"Chile", flag:"🇨🇱"},
+{code:"PHP", country:"Philippines", flag:"🇵🇭"},
+{code:"AED", country:"UAE", flag:"🇦🇪"},
+{code:"COP", country:"Colombia", flag:"🇨🇴"},
+{code:"SAR", country:"Saudi Arabia", flag:"🇸🇦"},
+{code:"MYR", country:"Malaysia", flag:"🇲🇾"},
+{code:"RON", country:"Romania", flag:"🇷🇴"},
+{code:"PKR", country:"Pakistan", flag:"🇵🇰"},
+{code:"QAR", country:"Qatar", flag:"🇶🇦"},
+{code:"KWD", country:"Kuwait", flag:"🇰🇼"},
+{code:"NGN", country:"Nigeria", flag:"🇳🇬"},
+{code:"BDT", country:"Bangladesh", flag:"🇧🇩"},
+{code:"EGP", country:"Egypt", flag:"🇪🇬"},
+{code:"VND", country:"Vietnam", flag:"🇻🇳"},
+{code:"KZT", country:"Kazakhstan", flag:"🇰🇿"},
+{code:"ARS", country:"Argentina", flag:"🇦🇷"},
+{code:"DZD", country:"Algeria", flag:"🇩🇿"},
+{code:"MAD", country:"Morocco", flag:"🇲🇦"},
+{code:"PEN", country:"Peru", flag:"🇵🇪"},
+{code:"UAH", country:"Ukraine", flag:"🇺🇦"},
+{code:"IQD", country:"Iraq", flag:"🇮🇶"},
+{code:"UZS", country:"Uzbekistan", flag:"🇺🇿"},
+{code:"GHS", country:"Ghana", flag:"🇬🇭"},
+{code:"XOF", country:"West Africa", flag:"🌍"},
+{code:"XAF", country:"Central Africa", flag:"🌍"},
+{code:"KES", country:"Kenya", flag:"🇰🇪"},
+{code:"TND", country:"Tunisia", flag:"🇹🇳"},
+{code:"BHD", country:"Bahrain", flag:"🇧🇭"},
+{code:"OMR", country:"Oman", flag:"🇴🇲"},
+{code:"LKR", country:"Sri Lanka", flag:"🇱🇰"},
+{code:"MMK", country:"Myanmar", flag:"🇲🇲"},
+{code:"ETB", country:"Ethiopia", flag:"🇪🇹"},
+{code:"BGN", country:"Bulgaria", flag:"🇧🇬"},
+{code:"HRK", country:"Croatia", flag:"🇭🇷"},
+{code:"CRC", country:"Costa Rica", flag:"🇨🇷"},
+{code:"GTQ", country:"Guatemala", flag:"🇬🇹"},
+{code:"PAB", country:"Panama", flag:"🇵🇦"},
+{code:"UYU", country:"Uruguay", flag:"🇺🇾"},
+{code:"BWP", country:"Botswana", flag:"🇧🇼"},
+{code:"NAD", country:"Namibia", flag:"🇳🇦"},
+{code:"BND", country:"Brunei", flag:"🇧🇳"},
+{code:"SRD", country:"Suriname", flag:"🇸🇷"},
+{code:"BZD", country:"Belize", flag:"🇧🇿"},
+{code:"JMD", country:"Jamaica", flag:"🇯🇲"},
+{code:"TTD", country:"Trinidad & Tobago", flag:"🇹🇹"},
+{code:"BSD", country:"Bahamas", flag:"🇧🇸"},
+{code:"ALL", country:"Albania", flag:"🇦🇱"},
+{code:"MKD", country:"North Macedonia", flag:"🇲🇰"},
+{code:"GEL", country:"Georgia", flag:"🇬🇪"},
+{code:"MDL", country:"Moldova", flag:"🇲🇩"},
+{code:"AZN", country:"Azerbaijan", flag:"🇦🇿"},
+{code:"AMD", country:"Armenia", flag:"🇦🇲"},
+{code:"KYD", country:"Cayman Islands", flag:"🇰🇾"},
+{code:"MUR", country:"Mauritius", flag:"🇲🇺"},
+{code:"MGA", country:"Madagascar", flag:"🇲🇬"},
+{code:"MWK", country:"Malawi", flag:"🇲🇼"},
+{code:"ZMW", country:"Zambia", flag:"🇿🇲"},
+{code:"BBD", country:"Barbados", flag:"🇧🇧"},
+{code:"SCR", country:"Seychelles", flag:"🇸🇨"},
+{code:"NPR", country:"Nepal", flag:"🇳🇵"},
+{code:"KGS", country:"Kyrgyzstan", flag:"🇰🇬"},
+{code:"LAK", country:"Laos", flag:"🇱🇦"},
+{code:"KHR", country:"Cambodia", flag:"🇰🇭"},
+{code:"YER", country:"Yemen", flag:"🇾🇪"},
+{code:"AFN", country:"Afghanistan", flag:"🇦🇫"},
+{code:"IRR", country:"Iran", flag:"🇮🇷"},
+{code:"SDG", country:"Sudan", flag:"🇸🇩"},
+{code:"LYD", country:"Libya", flag:"🇱🇾"},
+{code:"CDF", country:"DR Congo", flag:"🇨🇩"},
+{code:"BIF", country:"Burundi", flag:"🇧🇮"},
+{code:"RWF", country:"Rwanda", flag:"🇷🇼"},
+{code:"DJF", country:"Djibouti", flag:"🇩🇯"},
+{code:"SLL", country:"Sierra Leone", flag:"🇸🇱"},
+{code:"GNF", country:"Guinea", flag:"🇬🇳"},
+{code:"MZN", country:"Mozambique", flag:"🇲🇿"},
+{code:"SZL", country:"Eswatini", flag:"🇸🇿"},
+{code:"LSL", country:"Lesotho", flag:"🇱🇸"},
+{code:"PGK", country:"Papua New Guinea", flag:"🇵🇬"},
+{code:"FJD", country:"Fiji", flag:"🇫🇯"},
+{code:"TOP", country:"Tonga", flag:"🇹🇴"},
+{code:"WST", country:"Samoa", flag:"🇼🇸"},
+{code:"VUV", country:"Vanuatu", flag:"🇻🇺"},
+{code:"HTG", country:"Haiti", flag:"🇭🇹"},
+{code:"HNL", country:"Honduras", flag:"🇭🇳"},
+{code:"NIO", country:"Nicaragua", flag:"🇳🇮"},
+{code:"BOB", country:"Bolivia", flag:"🇧🇴"},
+{code:"PYG", country:"Paraguay", flag:"🇵🇾"},
+{code:"GYD", country:"Guyana", flag:"🇬🇾"},
+{code:"SOS", country:"Somalia", flag:"🇸🇴"},
+{code:"BTN", country:"Bhutan", flag:"🇧🇹"},
+{code:"TJS", country:"Tajikistan", flag:"🇹🇯"},
+{code:"ISK", country:"Iceland", flag:"🇮🇸"},
+{code:"FKP", country:"Falkland Islands", flag:"🇫🇰"},
+{code:"SHP", country:"Saint Helena", flag:"🇸🇭"},
+{code:"GIP", country:"Gibraltar", flag:"🇬🇮"},
+{code:"ANG", country:"Curaçao", flag:"🇨🇼"},
+{code:"AWG", country:"Aruba", flag:"🇦🇼"},
+{code:"ERN", country:"Eritrea", flag:"🇪🇷"}
 ];
 
 const rate = [
@@ -136,83 +353,204 @@ const rate = [
 10914.0,208.0,10.9,1.25,1.73,1.27,1.71,1.00,1.79,1.80,15.0
 ];
 
-const dropdown1 = document.getElementById("inputCurrency");
-const dropdown2 = document.getElementById("outputCurrency");
-const search1 = document.getElementById("searchInput1");
-const search2 = document.getElementById("searchInput2");
+/* -------------------------
+   Populate selects + search
+-------------------------- */
+const fromSelect = document.getElementById('fromSelect');
+const toSelect = document.getElementById('toSelect');
+const searchFrom = document.getElementById('searchFrom');
+const searchTo = document.getElementById('searchTo');
 
-function populateDropdown(dropdown, data) {
-    dropdown.innerHTML = '';
-    data.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.code;
-        option.textContent = `${item.flag} ${item.code} - ${item.country}`;
-        dropdown.appendChild(option);
-    });
+function makeOption(item){
+  return `${item.flag} ${item.code} - ${item.country}`;
 }
 
-populateDropdown(dropdown1, currencyData);
-populateDropdown(dropdown2, currencyData);
-
-search1.addEventListener('input', () => {
-    const filter = search1.value.toLowerCase();
-    const filtered = currencyData.filter(c =>
-        c.code.toLowerCase().includes(filter) ||
-        c.country.toLowerCase().includes(filter) ||
-        c.flag.includes(filter)
-    );
-    populateDropdown(dropdown1, filtered);
-});
-
-search2.addEventListener('input', () => {
-    const filter = search2.value.toLowerCase();
-    const filtered = currencyData.filter(c =>
-        c.code.toLowerCase().includes(filter) ||
-        c.country.toLowerCase().includes(filter) ||
-        c.flag.includes(filter)
-    );
-    populateDropdown(dropdown2, filtered);
-});
-
-let chart;
-
-function convert() {
-    const x = dropdown1.value;
-    const y = dropdown2.value;
-    const amount = parseFloat(document.getElementById("amount").value);
-
-    if (isNaN(amount)) {
-        document.getElementById("result").textContent = "Enter a valid amount!";
-        return;
-    }
-
-    const inIndex = currencyData.findIndex(c => c.code === x);
-    const outIndex = currencyData.findIndex(c => c.code === y);
-
-    const baseValue = amount / rate[inIndex];
-    const finalValue = baseValue * rate[outIndex];
-
-    document.getElementById("result").textContent =
-        `${amount} ${x} = ${finalValue.toFixed(2)} ${y}`;
-
-    const ctx = document.getElementById('currencyChart').getContext('2d');
-    if(chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: [x, y],
-            datasets: [{
-                label: 'Currency Comparison',
-                data: [amount, finalValue.toFixed(2)],
-                backgroundColor: ['#007bff','#28a745']
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+function populate(selectEl, list){
+  selectEl.innerHTML = '';
+  list.forEach(item => {
+    const o = document.createElement('option');
+    o.value = item.code;
+    o.textContent = makeOption(item);
+    selectEl.appendChild(o);
+  });
 }
+
+// default populate
+populate(fromSelect, currencyData);
+populate(toSelect, currencyData);
+
+// filter functions
+function filterList(query){
+  const q = (query||'').toLowerCase();
+  return currencyData.filter(c => 
+    c.code.toLowerCase().includes(q) ||
+    c.country.toLowerCase().includes(q) ||
+    c.flag.includes(q)
+  );
+}
+
+searchFrom.addEventListener('input', e => {
+  populate(fromSelect, filterList(e.target.value));
+});
+searchTo.addEventListener('input', e => {
+  populate(toSelect, filterList(e.target.value));
+});
+
+/* -------------------------
+   Conversion & UI logic
+-------------------------- */
+const amountInput = document.getElementById('amount');
+const convertBtn = document.getElementById('convertBtn');
+const swapBtn = document.getElementById('swapBtn');
+const resultText = document.getElementById('resultText');
+const historyList = document.getElementById('historyList');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const favoriteBtn = document.getElementById('favoriteBtn');
+
+let conversionHistory = [];
+let chartInstance = null;
+
+function findIndexByCode(code){
+  return currencyData.findIndex(c => c.code === code);
+}
+
+function convertAndShow(){
+  const x = fromSelect.value;
+  const y = toSelect.value;
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount)){
+    resultText.textContent = 'Enter a valid amount';
+    return;
+  }
+  const inIndex = findIndexByCode(x);
+  const outIndex = findIndexByCode(y);
+  if (inIndex === -1 || outIndex === -1){
+    resultText.textContent = 'Currency error';
+    return;
+  }
+
+  // same formula as C program
+  const baseValue = amount / rate[inIndex];
+  const finalValue = baseValue * rate[outIndex];
+
+  const finalRounded = parseFloat(finalValue.toFixed(2));
+  resultText.textContent = `${amount} ${x} = ${finalRounded} ${y}`;
+
+  // push to history (limit 8)
+  conversionHistory.unshift({from:x,to:y,amount,converted:finalRounded, time: new Date().toLocaleString()});
+  if (conversionHistory.length>8) conversionHistory.pop();
+  renderHistory();
+
+  // update chart
+  updateChart(amount, finalRounded, x, y);
+}
+
+convertBtn.addEventListener('click', convertAndShow);
+
+swapBtn.addEventListener('click', () => {
+  // swap selections & result
+  const a = fromSelect.selectedIndex;
+  const b = toSelect.selectedIndex;
+  // swap the selected values and also texts
+  const prevFrom = fromSelect.value;
+  const prevTo = toSelect.value;
+  // set selection by value
+  fromSelect.value = prevTo;
+  toSelect.value = prevFrom;
+  // update search fields and clear result
+  searchFrom.value = '';
+  searchTo.value = '';
+  resultText.textContent = 'Swapped — click Convert';
+});
+
+clearHistoryBtn.addEventListener('click', () => {
+  conversionHistory = [];
+  renderHistory();
+});
+
+function renderHistory(){
+  historyList.innerHTML = '';
+  if (conversionHistory.length === 0){
+    historyList.textContent = 'No conversions yet — results will appear here.';
+    return;
+  }
+  conversionHistory.forEach((h, idx) => {
+    const el = document.createElement('div');
+    el.className = 'history-item';
+    el.innerHTML = `<div><strong>${h.amount} ${h.from} → ${h.converted} ${h.to}</strong></div>
+                    <div style="font-size:12px;color:var(--soft)">${h.time}</div>`;
+    el.addEventListener('click', () => {
+      // load into selects and amount for quick repeat
+      fromSelect.value = h.from;
+      toSelect.value = h.to;
+      amountInput.value = h.amount;
+      resultText.textContent = `${h.amount} ${h.from} = ${h.converted} ${h.to}`;
+      updateChart(h.amount, h.converted, h.from, h.to);
+    });
+    historyList.appendChild(el);
+  });
+}
+
+/* -------------------------
+    Chart.js — bar graph
+-------------------------- */
+function updateChart(valFrom, valTo, labelFrom, labelTo){
+  const ctx = document.getElementById('chartCanvas').getContext('2d');
+
+  const numericFrom = Number(valFrom);
+  const numericTo = Number(valTo);
+
+  const data = {
+    labels: [labelFrom, labelTo],
+    datasets: [{
+      label: 'Amount comparison',
+      data: [numericFrom, numericTo],
+      backgroundColor: ['rgba(79,140,255,0.9)', 'rgba(122,240,199,0.9)'],
+      borderRadius:6
+    }]
+  };
+
+  const options = {
+    responsive:true,
+    plugins: { legend: { display:false } },
+    scales: { y: { beginAtZero:true } }
+  };
+
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, { type:'bar', data, options });
+}
+
+/* -------------------------
+   Initial UI setup
+-------------------------- */
+(function init(){
+  // default selections
+  fromSelect.value = 'USD';
+  toSelect.value = 'INR';
+  amountInput.value = 100;
+
+  renderHistory();
+  // draw initial chart with placeholder values
+  updateChart(100, (100 / rate[ findIndexByCode('USD') ]) * rate[ findIndexByCode('INR') ], 'USD','INR');
+})();
+
+/* -------------------------
+   Optional: favorites (simple toggle)
+-------------------------- */
+let favorites = new Set();
+favoriteBtn.addEventListener('click', () => {
+  const cur = toSelect.value;
+  if (favorites.has(cur)) {
+    favorites.delete(cur);
+    favoriteBtn.textContent = '★';
+    favoriteBtn.title = 'Add/Remove favorite';
+  } else {
+    favorites.add(cur);
+    favoriteBtn.textContent = '★'; // visually the same - you can style differently
+    favoriteBtn.title = 'Marked favorite';
+  }
+});
+
 </script>
 </body>
 </html>
