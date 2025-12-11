@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Currency Converter</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f3f4f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        background: white;
+        width: 420px;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+    h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    select, input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #aaa;
+        font-size: 16px;
+    }
+    input[type="text"] {
+        margin-bottom: 5px;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #007bff;
+        border: none;
+        font-size: 18px;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    button:hover { background: #005dc1; }
+    .result {
+        margin-top: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #222;
+    }
+    canvas { margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Currency Converter</h2>
+
+    <input type="text" id="searchInput1" placeholder="Search input currency...">
+    <select id="inputCurrency" size="5"></select>
+
+    <input type="text" id="searchInput2" placeholder="Search output currency...">
+    <select id="outputCurrency" size="5"></select>
+
+    <input type="number" id="amount" placeholder="Enter amount">
+    <button onclick="convert()">Convert</button>
+    <div class="result" id="result"></div>
+    <canvas id="currencyChart" width="400" height="200"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const currencyData = [
+{code:"USD", country:"United States", flag:"🇺🇸"}, {code:"EUR", country:"European Union", flag:"🇪🇺"}, {code:"JPY", country:"Japan", flag:"🇯🇵"},
+{code:"GBP", country:"United Kingdom", flag:"🇬🇧"}, {code:"AUD", country:"Australia", flag:"🇦🇺"}, {code:"CAD", country:"Canada", flag:"🇨🇦"},
+{code:"CHF", country:"Switzerland", flag:"🇨🇭"}, {code:"CNY", country:"China", flag:"🇨🇳"}, {code:"HKD", country:"Hong Kong", flag:"🇭🇰"},
+{code:"NZD", country:"New Zealand", flag:"🇳🇿"}, {code:"SEK", country:"Sweden", flag:"🇸🇪"}, {code:"KRW", country:"South Korea", flag:"🇰🇷"},
+{code:"SGD", country:"Singapore", flag:"🇸🇬"}, {code:"NOK", country:"Norway", flag:"🇳🇴"}, {code:"MXN", country:"Mexico", flag:"🇲🇽"},
+{code:"INR", country:"India", flag:"🇮🇳"}, {code:"RUB", country:"Russia", flag:"🇷🇺"}, {code:"ZAR", country:"South Africa", flag:"🇿🇦"},
+{code:"TRY", country:"Turkey", flag:"🇹🇷"}, {code:"BRL", country:"Brazil", flag:"🇧🇷"}, {code:"TWD", country:"Taiwan", flag:"🇹🇼"},
+{code:"DKK", country:"Denmark", flag:"🇩🇰"}, {code:"PLN", country:"Poland", flag:"🇵🇱"}, {code:"THB", country:"Thailand", flag:"🇹🇭"},
+{code:"IDR", country:"Indonesia", flag:"🇮🇩"}, {code:"HUF", country:"Hungary", flag:"🇭🇺"}, {code:"CZK", country:"Czech Republic", flag:"🇨🇿"},
+{code:"ILS", country:"Israel", flag:"🇮🇱"}, {code:"CLP", country:"Chile", flag:"🇨🇱"}, {code:"PHP", country:"Philippines", flag:"🇵🇭"},
+{code:"AED", country:"UAE", flag:"🇦🇪"}, {code:"COP", country:"Colombia", flag:"🇨🇴"}, {code:"SAR", country:"Saudi Arabia", flag:"🇸🇦"},
+{code:"MYR", country:"Malaysia", flag:"🇲🇾"}, {code:"RON", country:"Romania", flag:"🇷🇴"}, {code:"PKR", country:"Pakistan", flag:"🇵🇰"},
+{code:"QAR", country:"Qatar", flag:"🇶🇦"}, {code:"KWD", country:"Kuwait", flag:"🇰🇼"}, {code:"NGN", country:"Nigeria", flag:"🇳🇬"},
+{code:"BDT", country:"Bangladesh", flag:"🇧🇩"}, {code:"EGP", country:"Egypt", flag:"🇪🇬"}, {code:"VND", country:"Vietnam", flag:"🇻🇳"},
+{code:"KZT", country:"Kazakhstan", flag:"🇰🇿"}, {code:"ARS", country:"Argentina", flag:"🇦🇷"}, {code:"DZD", country:"Algeria", flag:"🇩🇿"},
+{code:"MAD", country:"Morocco", flag:"🇲🇦"}, {code:"PEN", country:"Peru", flag:"🇵🇪"}, {code:"UAH", country:"Ukraine", flag:"🇺🇦"},
+{code:"IQD", country:"Iraq", flag:"🇮🇶"}, {code:"UZS", country:"Uzbekistan", flag:"🇺🇿"}, {code:"GHS", country:"Ghana", flag:"🇬🇭"},
+{code:"XOF", country:"West Africa", flag:"🌍"}, {code:"XAF", country:"Central Africa", flag:"🌍"}, {code:"KES", country:"Kenya", flag:"🇰🇪"},
+{code:"TND", country:"Tunisia", flag:"🇹🇳"}, {code:"BHD", country:"Bahrain", flag:"🇧🇭"}, {code:"OMR", country:"Oman", flag:"🇴🇲"},
+{code:"LKR", country:"Sri Lanka", flag:"🇱🇰"}, {code:"MMK", country:"Myanmar", flag:"🇲🇲"}, {code:"ETB", country:"Ethiopia", flag:"🇪🇹"},
+{code:"BGN", country:"Bulgaria", flag:"🇧🇬"}, {code:"HRK", country:"Croatia", flag:"🇭🇷"}, {code:"CRC", country:"Costa Rica", flag:"🇨🇷"},
+{code:"GTQ", country:"Guatemala", flag:"🇬🇹"}, {code:"PAB", country:"Panama", flag:"🇵🇦"}, {code:"UYU", country:"Uruguay", flag:"🇺🇾"},
+{code:"BWP", country:"Botswana", flag:"🇧🇼"}, {code:"NAD", country:"Namibia", flag:"🇳🇦"}, {code:"BND", country:"Brunei", flag:"🇧🇳"},
+{code:"SRD", country:"Suriname", flag:"🇸🇷"}, {code:"BZD", country:"Belize", flag:"🇧🇿"}, {code:"JMD", country:"Jamaica", flag:"🇯🇲"},
+{code:"TTD", country:"Trinidad & Tobago", flag:"🇹🇹"}, {code:"BSD", country:"Bahamas", flag:"🇧🇸"}, {code:"ALL", country:"Albania", flag:"🇦🇱"},
+{code:"MKD", country:"North Macedonia", flag:"🇲🇰"}, {code:"GEL", country:"Georgia", flag:"🇬🇪"}, {code:"MDL", country:"Moldova", flag:"🇲🇩"},
+{code:"AZN", country:"Azerbaijan", flag:"🇦🇿"}, {code:"AMD", country:"Armenia", flag:"🇦🇲"}, {code:"KYD", country:"Cayman Islands", flag:"🇰🇾"},
+{code:"MUR", country:"Mauritius", flag:"🇲🇺"}, {code:"MGA", country:"Madagascar", flag:"🇲🇬"}, {code:"MWK", country:"Malawi", flag:"🇲🇼"},
+{code:"ZMW", country:"Zambia", flag:"🇿🇲"}, {code:"BBD", country:"Barbados", flag:"🇧🇧"}, {code:"SCR", country:"Seychelles", flag:"🇸🇨"},
+{code:"NPR", country:"Nepal", flag:"🇳🇵"}, {code:"KGS", country:"Kyrgyzstan", flag:"🇰🇬"}, {code:"LAK", country:"Laos", flag:"🇱🇦"},
+{code:"KHR", country:"Cambodia", flag:"🇰🇭"}, {code:"YER", country:"Yemen", flag:"🇾🇪"}, {code:"AFN", country:"Afghanistan", flag:"🇦🇫"},
+{code:"IRR", country:"Iran", flag:"🇮🇷"}, {code:"SDG", country:"Sudan", flag:"🇸🇩"}, {code:"LYD", country:"Libya", flag:"🇱🇾"},
+{code:"CDF", country:"DR Congo", flag:"🇨🇩"}, {code:"BIF", country:"Burundi", flag:"🇧🇮"}, {code:"RWF", country:"Rwanda", flag:"🇷🇼"},
+{code:"DJF", country:"Djibouti", flag:"🇩🇯"}, {code:"SLL", country:"Sierra Leone", flag:"🇸🇱"}, {code:"GNF", country:"Guinea", flag:"🇬🇳"},
+{code:"MZN", country:"Mozambique", flag:"🇲🇿"}, {code:"SZL", country:"Eswatini", flag:"🇸🇿"}, {code:"LSL", country:"Lesotho", flag:"🇱🇸"},
+{code:"PGK", country:"Papua New Guinea", flag:"🇵🇬"}, {code:"FJD", country:"Fiji", flag:"🇫🇯"}, {code:"TOP", country:"Tonga", flag:"🇹🇴"},
+{code:"WST", country:"Samoa", flag:"🇼🇸"}, {code:"VUV", country:"Vanuatu", flag:"🇻🇺"}, {code:"HTG", country:"Haiti", flag:"🇭🇹"},
+{code:"HNL", country:"Honduras", flag:"🇭🇳"}, {code:"NIO", country:"Nicaragua", flag:"🇳🇮"}, {code:"BOB", country:"Bolivia", flag:"🇧🇴"},
+{code:"PYG", country:"Paraguay", flag:"🇵🇾"}, {code:"GYD", country:"Guyana", flag:"🇬🇾"}, {code:"SOS", country:"Somalia", flag:"🇸🇴"},
+{code:"BTN", country:"Bhutan", flag:"🇧🇹"}, {code:"TJS", country:"Tajikistan", flag:"🇹🇯"}, {code:"ISK", country:"Iceland", flag:"🇮🇸"},
+{code:"FKP", country:"Falkland Islands", flag:"🇫🇰"}, {code:"SHP", country:"Saint Helena", flag:"🇸🇭"}, {code:"GIP", country:"Gibraltar", flag:"🇬🇮"},
+{code:"ANG", country:"Curaçao", flag:"🇨🇼"}, {code:"AWG", country:"Aruba", flag:"🇦🇼"}, {code:"ERN", country:"Eritrea", flag:"🇪🇷"}
+];
+
+const rate = [
+1.0000,0.8585,155.1985,0.7497,1.5077,1.3860,0.8042,7.0819,7.7847,1.7316,
+9.4052,1472.1006,1.2955,10.1035,18.1950,90.0251,76.9536,16.9389,42.5500,5.3108,
+31.2732,6.4069,3.6322,31.8771,16679.1992,327.8412,20.7797,3.2375,917.6757,59.0097,
+3.6725,3785.5315,3.7500,4.1115,4.3693,282.4023,3.6400,0.3068,1449.7699,122.3576,
+47.5672,26273.1973,505.2302,1438.5800,130.0949,9.2359,3.3660,42.1737,1311.2258,11938.9570,
+11.6113,563.2733,563.2733,129.2873,2.9397,0.3760,0.3845,308.7095,2104.2200,153.6532,
+1.6795,6.4699,491.8636,7.6630,1.0000,39.2391,13.8690,16.9389,
+1.2955,38.5118,2.0000,160.2951,6.7369,1.0000,82.8927,52.8931,2.7003,16.9953,
+1.7005,381.2394,0.8333,46.0072,4466.7222,1745.0050,23.0516,2.0000,13.7307,144.0398,
+87.3515,21782.9141,4016.0137,238.5187,66.2641,42266.0586,509.3738,
+5.4444,2217.1096,2963.9761,1458.0897,177.7210,22962.8242,8702.1338,63.5898,921.5621,
+16.9389,4.2462,2.2650,2.4172,2.7678,122.2887,130.8981,8.0183,7.6630,7.6630,
+10914.0,208.0,10.9,1.25,1.73,1.27,1.71,1.00,1.79,1.80,15.0
+];
+
+const dropdown1 = document.getElementById("inputCurrency");
+const dropdown2 = document.getElementById("outputCurrency");
+const search1 = document.getElementById("searchInput1");
+const search2 = document.getElementById("searchInput2");
+
+function populateDropdown(dropdown, data) {
+    dropdown.innerHTML = '';
+    data.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.code;
+        option.textContent = `${item.flag} ${item.code} - ${item.country}`;
+        dropdown.appendChild(option);
+    });
+}
+
+populateDropdown(dropdown1, currencyData);
+populateDropdown(dropdown2, currencyData);
+
+search1.addEventListener('input', () => {
+    const filter = search1.value.toLowerCase();
+    const filtered = currencyData.filter(c =>
+        c.code.toLowerCase().includes(filter) ||
+        c.country.toLowerCase().includes(filter) ||
+        c.flag.includes(filter)
+    );
+    populateDropdown(dropdown1, filtered);
+});
+
+search2.addEventListener('input', () => {
+    const filter = search2.value.toLowerCase();
+    const filtered = currencyData.filter(c =>
+        c.code.toLowerCase().includes(filter) ||
+        c.country.toLowerCase().includes(filter) ||
+        c.flag.includes(filter)
+    );
+    populateDropdown(dropdown2, filtered);
+});
+
+let chart;
+
+function convert() {
+    const x = dropdown1.value;
+    const y = dropdown2.value;
+    const amount = parseFloat(document.getElementById("amount").value);
+
+    if (isNaN(amount)) {
+        document.getElementById("result").textContent = "Enter a valid amount!";
+        return;
+    }
+
+    const inIndex = currencyData.findIndex(c => c.code === x);
+    const outIndex = currencyData.findIndex(c => c.code === y);
+
+    const baseValue = amount / rate[inIndex];
+    const finalValue = baseValue * rate[outIndex];
+
+    document.getElementById("result").textContent =
+        `${amount} ${x} = ${finalValue.toFixed(2)} ${y}`;
+
+    const ctx = document.getElementById('currencyChart').getContext('2d');
+    if(chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [x, y],
+            datasets: [{
+                label: 'Currency Comparison',
+                data: [amount, finalValue.toFixed(2)],
+                backgroundColor: ['#007bff','#28a745']
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+</script>
+</body>
+</html>
