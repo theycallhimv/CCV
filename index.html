@@ -27,6 +27,8 @@
       border:1px solid rgba(255,255,255,0.25);
       box-shadow:0 24px 50px rgba(0,0,0,0.45);
       color:#F9FAFB;
+      position:relative;
+      overflow:hidden;
     }
     .topbar{
       display:flex;
@@ -35,6 +37,31 @@
       margin-bottom:12px;
       gap:10px;
       flex-wrap:wrap;
+    }
+    .top-left-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .history-btn{
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.5);
+      background:rgba(15,23,42,0.9);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      color:#E5E7EB;
+      font-size:0.9rem;
+      transition:.2s background,.2s transform,.2s box-shadow;
+      box-shadow:0 8px 18px rgba(0,0,0,0.45);
+    }
+    .history-btn:hover{
+      background:linear-gradient(135deg,#4F46E5,#EC4899);
+      transform:translateY(-1px);
+      box-shadow:0 12px 26px rgba(79,70,229,0.6);
     }
     .top-title{
       font-size:1.5rem;
@@ -81,7 +108,6 @@
     .page{display:none;}
     .page.active{display:block;}
 
-    /* Converter styles (left) */
     .converter-layout{
       display:grid;
       grid-template-columns:minmax(0,1.05fr) minmax(0,1.1fr);
@@ -174,6 +200,38 @@
       margin-top:2px;
       min-height:16px;
     }
+
+    /* search above dropdowns */
+    .search-wrap{
+      position:relative;
+      margin-bottom:6px;
+    }
+    .search-wrap input{
+      width:100%;
+      padding:7px 10px 7px 26px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.9);
+      color:#E5E7EB;
+      font-size:0.78rem;
+      outline:none;
+      transition:.2s border,.2s box-shadow,.2s background;
+    }
+    .search-wrap input:focus{
+      border-color:#4F46E5;
+      box-shadow:0 0 0 1px rgba(79,70,229,0.4);
+      background:rgba(15,23,42,1);
+    }
+    .search-wrap .icon{
+      position:absolute;
+      left:8px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:0.75rem;
+      color:#9CA3AF;
+      pointer-events:none;
+    }
+
     .swap-btn{
       width:36px;
       height:36px;
@@ -259,6 +317,87 @@
       min-height:14px;
     }
 
+    /* history panel */
+    .history-panel{
+      position:absolute;
+      top:0;
+      left:0;
+      height:100%;
+      width:260px;
+      background:rgba(15,23,42,0.96);
+      border-right:1px solid rgba(148,163,184,0.55);
+      padding:14px 12px;
+      transform:translateX(-100%);
+      transition:.3s transform;
+      z-index:20;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .history-panel.open{
+      transform:translateX(0);
+    }
+    .history-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .history-title{
+      font-size:0.95rem;
+      font-weight:600;
+    }
+    .history-close{
+      border:none;
+      background:transparent;
+      color:#9CA3AF;
+      cursor:pointer;
+      font-size:0.9rem;
+    }
+    .history-list{
+      margin-top:8px;
+      flex:1;
+      overflow-y:auto;
+      font-size:0.78rem;
+      color:#E5E7EB;
+    }
+    .history-item{
+      padding:6px 6px;
+      border-radius:10px;
+      border:1px solid rgba(55,65,81,0.9);
+      margin-bottom:6px;
+      background:rgba(17,24,39,0.9);
+    }
+    .history-meta{
+      font-size:0.7rem;
+      color:#9CA3AF;
+      margin-top:2px;
+    }
+    .history-empty{
+      font-size:0.76rem;
+      color:#9CA3AF;
+      margin-top:8px;
+    }
+    .history-footer{
+      margin-top:6px;
+      display:flex;
+      justify-content:flex-end;
+    }
+    .clear-history{
+      border:none;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:0.72rem;
+      cursor:pointer;
+      background:rgba(31,41,55,0.9);
+      color:#E5E7EB;
+      border:1px solid rgba(75,85,99,0.9);
+      transition:.2s background,.2s transform;
+    }
+    .clear-history:hover{
+      background:rgba(55,65,81,1);
+      transform:translateY(-1px);
+    }
+
     /* REER page */
     .reer-layout{
       display:grid;
@@ -331,10 +470,26 @@
 </head>
 <body>
 <div class="app">
+  <!-- history slide-in -->
+  <div class="history-panel" id="historyPanel">
+    <div class="history-header">
+      <div class="history-title">Recent conversions</div>
+      <button class="history-close" id="historyClose">✕</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+    <div class="history-empty" id="historyEmpty">No history yet. Convert some amounts to see them here.</div>
+    <div class="history-footer">
+      <button class="clear-history" id="clearHistoryBtn">Clear history</button>
+    </div>
+  </div>
+
   <div class="topbar">
-    <div>
-      <div class="top-title">Currency Converter & REER Explorer</div>
-      <div class="top-sub">Page 1: 108‑currency converter • Page 2: Real Effective Exchange Rate (REER) overview and graphs.</div>
+    <div class="top-left-group">
+      <button class="history-btn" id="historyBtn" title="Show recent conversions">☰</button>
+      <div>
+        <div class="top-title">Currency Converter & REER Explorer</div>
+        <div class="top-sub">Page 1: 108‑currency converter • Page 2: Real Effective Exchange Rate (REER) overview and graphs.</div>
+      </div>
     </div>
     <div class="pill">Offline converter · REER indices</div>
   </div>
@@ -359,6 +514,10 @@
         <div class="curr-row">
           <div>
             <label for="fromCurrency">From</label>
+            <div class="search-wrap">
+              <span class="icon">🔍</span>
+              <input type="text" id="fromSearch" placeholder="Search currency..." />
+            </div>
             <div class="select-wrap">
               <select id="fromCurrency"></select>
             </div>
@@ -369,6 +528,10 @@
 
           <div>
             <label for="toCurrency">To</label>
+            <div class="search-wrap">
+              <span class="icon">🔍</span>
+              <input type="text" id="toSearch" placeholder="Search currency..." />
+            </div>
             <div class="select-wrap">
               <select id="toCurrency"></select>
             </div>
@@ -401,11 +564,11 @@
         </p>
         <ul style="margin-left:14px;font-size:0.8rem;color:#E5E7EB;">
           <li>Each of the 108 currencies has a rate that tells how many units equal 1 USD in your offline table.</li>
-          <li>The program divides the input amount by its currency’s rate to get a base USD amount, then multiplies by the output currency’s rate to convert. [web:93]</li>
+          <li>The program divides the input amount by its currency’s rate to get a base USD amount, then multiplies by the output currency’s rate to convert.</li>
           <li>Because the rates are fixed, results are consistent but do not update with real‑time markets.</li>
         </ul>
         <p class="note-small">
-          For live FX, actual APIs or central‑bank data are needed, but this project focuses on algorithm and interface using static reference values. [web:93][web:87]
+          For live FX, actual APIs or central‑bank data are needed, but this project focuses on algorithm and interface using static reference values.
         </p>
       </div>
     </div>
@@ -417,44 +580,38 @@
       <div class="reer-text">
         <div class="section-title">📈 What is REER?</div>
         <p>
-          REER (Real Effective Exchange Rate) is an index that measures the value of a country’s currency against a basket of trading‑partner currencies, adjusted for inflation differences. [web:102][web:74]
+          REER (Real Effective Exchange Rate) is an index that measures the value of a country’s currency against a basket of trading‑partner currencies, adjusted for inflation differences.
         </p>
         <p>
-          It starts from the NEER (Nominal Effective Exchange Rate), which is a trade‑weighted average of bilateral exchange rates, and then adjusts by relative price levels between the home country and its partners. [web:74][web:106]
+          It starts from the NEER (Nominal Effective Exchange Rate), which is a trade‑weighted average of bilateral exchange rates, and then adjusts by relative price levels between the home country and its partners.
         </p>
-        <p>
-          In simple terms:
-        </p>
+        <p>In simple terms:</p>
         <ul>
-          <li>Basket: Main trading partners’ currencies, with weights based on trade shares. [web:102][web:109]</li>
-          <li>Nominal index: Weighted average of exchange rates (NEER index, usually with a base year like 2010 = 100). [web:74]</li>
-          <li>Real adjustment: NEER is divided or scaled by relative price indices (inflation) to get REER. [web:74][web:107]</li>
+          <li>Basket: Main trading partners’ currencies, with weights based on trade shares.</li>
+          <li>Nominal index: Weighted average of exchange rates (NEER index, usually with a base year like 2010 = 100).</li>
+          <li>Real adjustment: NEER is divided or scaled by relative price indices (inflation) to get REER.</li>
         </ul>
-        <p>
-          Interpreting the REER index:
-        </p>
+        <p>Interpreting the REER index:</p>
         <ul>
-          <li>Value above 100 (relative to base year) usually means real appreciation and possible loss of price competitiveness. [web:74][web:108]</li>
-          <li>Value below 100 indicates real depreciation and potentially better export competitiveness, but more expensive imports. [web:74][web:105]</li>
-          <li>Changes over time show whether a currency has become stronger or weaker in real, trade‑weighted terms, instead of just against one other currency. [web:102][web:109]</li>
+          <li>Value above 100 (relative to base year) usually means real appreciation and possible loss of price competitiveness.</li>
+          <li>Value below 100 indicates real depreciation and potentially better export competitiveness, but more expensive imports.</li>
+          <li>Changes over time show whether a currency has become stronger or weaker in real, trade‑weighted terms, instead of just against one other currency.</li>
         </ul>
-        <p>
-          How to use REER to see currency growth:
-        </p>
+        <p>How to use REER to see currency growth:</p>
         <ul>
-          <li>Upward‑sloping REER line ⇒ real appreciation (currency has gained value versus partners after inflation). [web:74][web:108]</li>
-          <li>Downward‑sloping REER line ⇒ real depreciation (currency cheaper than before in real terms). [web:74][web:106]</li>
-          <li>Stable REER around 100 ⇒ currency broadly in line with its base‑year competitiveness. [web:74]</li>
+          <li>Upward‑sloping REER line ⇒ real appreciation (currency has gained value versus partners after inflation).</li>
+          <li>Downward‑sloping REER line ⇒ real depreciation (currency cheaper than before in real terms).</li>
+          <li>Stable REER around 100 ⇒ currency broadly in line with its base‑year competitiveness.</li>
         </ul>
         <p class="note-small">
-          The values below are sample REER‑style indices you provided (base ≈ 2010 = 100), used here for illustration of appreciation or depreciation trends across USD, INR, JPY, CNY, HKD, SGD, GBP, CHF, AUD, and CAD. [web:74][web:102]
+          The values below are sample REER‑style indices you provided (base ≈ 2010 = 100), used here for illustration of appreciation or depreciation trends across USD, INR, JPY, CNY, HKD, SGD, GBP, CHF, AUD, and CAD.
         </p>
       </div>
 
       <div class="reer-charts">
         <div class="section-title">📊 REER Graphs (2015–2025)</div>
         <div class="section-sub">
-          Each mini chart shows the REER index over 2015–2025 for 10 currencies. A rising line suggests real appreciation; a falling line suggests real depreciation relative to the base year. [web:74][web:108]
+          Each mini chart shows the REER index over 2015–2025 for 10 currencies. A rising line suggests real appreciation; a falling line suggests real depreciation relative to the base year.
         </div>
 
         <div class="grid-reer">
@@ -571,6 +728,7 @@
     6388,209.22,569.58,90.50,9.229,126.40,0.7478,0.7485,0.7478,1.790,1.790,15
   ];
 
+  // === FULL 108‑CURRENCY META ARR ===
   const metaArr = [
     {code:"USD", country:"United States", flag:"🇺🇸"},
     {code:"EUR", country:"European Union", flag:"🇪🇺"},
@@ -582,9 +740,124 @@
     {code:"CNY", country:"China", flag:"🇨🇳"},
     {code:"HKD", country:"Hong Kong", flag:"🇭🇰"},
     {code:"NZD", country:"New Zealand", flag:"🇳🇿"},
+    {code:"SEK", country:"Sweden", flag:"🇸🇪"},
+    {code:"KRW", country:"South Korea", flag:"🇰🇷"},
     {code:"SGD", country:"Singapore", flag:"🇸🇬"},
-    {code:"INR", country:"India", flag:"🇮🇳"}
+    {code:"NOK", country:"Norway", flag:"🇳🇴"},
+    {code:"MXN", country:"Mexico", flag:"🇲🇽"},
+    {code:"INR", country:"India", flag:"🇮🇳"},
+    {code:"RUB", country:"Russia", flag:"🇷🇺"},
+    {code:"ZAR", country:"South Africa", flag:"🇿🇦"},
+    {code:"TRY", country:"Turkey", flag:"🇹🇷"},
+    {code:"BRL", country:"Brazil", flag:"🇧🇷"},
+    {code:"TWD", country:"Taiwan", flag:"🇹🇼"},
+    {code:"DKK", country:"Denmark", flag:"🇩🇰"},
+    {code:"PLN", country:"Poland", flag:"🇵🇱"},
+    {code:"THB", country:"Thailand", flag:"🇹🇭"},
+    {code:"IDR", country:"Indonesia", flag:"🇮🇩"},
+    {code:"HUF", country:"Hungary", flag:"🇭🇺"},
+    {code:"CZK", country:"Czech Republic", flag:"🇨🇿"},
+    {code:"ILS", country:"Israel", flag:"🇮🇱"},
+    {code:"CLP", country:"Chile", flag:"🇨🇱"},
+    {code:"PHP", country:"Philippines", flag:"🇵🇭"},
+    {code:"AED", country:"UAE", flag:"🇦🇪"},
+    {code:"COP", country:"Colombia", flag:"🇨🇴"},
+    {code:"SAR", country:"Saudi Arabia", flag:"🇸🇦"},
+    {code:"MYR", country:"Malaysia", flag:"🇲🇾"},
+    {code:"RON", country:"Romania", flag:"🇷🇴"},
+    {code:"PKR", country:"Pakistan", flag:"🇵🇰"},
+    {code:"QAR", country:"Qatar", flag:"🇶🇦"},
+    {code:"KWD", country:"Kuwait", flag:"🇰🇼"},
+    {code:"NGN", country:"Nigeria", flag:"🇳🇬"},
+    {code:"BDT", country:"Bangladesh", flag:"🇧🇩"},
+    {code:"EGP", country:"Egypt", flag:"🇪🇬"},
+    {code:"VND", country:"Vietnam", flag:"🇻🇳"},
+    {code:"KZT", country:"Kazakhstan", flag:"🇰🇿"},
+    {code:"ARS", country:"Argentina", flag:"🇦🇷"},
+    {code:"DZD", country:"Algeria", flag:"🇩🇿"},
+    {code:"MAD", country:"Morocco", flag:"🇲🇦"},
+    {code:"PEN", country:"Peru", flag:"🇵🇪"},
+    {code:"UAH", country:"Ukraine", flag:"🇺🇦"},
+    {code:"IQD", country:"Iraq", flag:"🇮🇶"},
+    {code:"UZS", country:"Uzbekistan", flag:"🇺🇿"},
+    {code:"GHS", country:"Ghana", flag:"🇬🇭"},
+    {code:"XOF", country:"West Africa", flag:"🌍"},
+    {code:"XAF", country:"Central Africa", flag:"🌍"},
+    {code:"KES", country:"Kenya", flag:"🇰🇪"},
+    {code:"TND", country:"Tunisia", flag:"🇹🇳"},
+    {code:"BHD", country:"Bahrain", flag:"🇧🇭"},
+    {code:"OMR", country:"Oman", flag:"🇴🇲"},
+    {code:"LKR", country:"Sri Lanka", flag:"🇱🇰"},
+    {code:"MMK", country:"Myanmar", flag:"🇲🇲"},
+    {code:"ETB", country:"Ethiopia", flag:"🇪🇹"},
+    {code:"BGN", country:"Bulgaria", flag:"🇧🇬"},
+    {code:"HRK", country:"Croatia", flag:"🇭🇷"},
+    {code:"CRC", country:"Costa Rica", flag:"🇨🇷"},
+    {code:"GTQ", country:"Guatemala", flag:"🇬🇹"},
+    {code:"PAB", country:"Panama", flag:"🇵🇦"},
+    {code:"UYU", country:"Uruguay", flag:"🇺🇾"},
+    {code:"BWP", country:"Botswana", flag:"🇧🇼"},
+    {code:"NAD", country:"Namibia", flag:"🇳🇦"},
+    {code:"BND", country:"Brunei", flag:"🇧🇳"},
+    {code:"SRD", country:"Suriname", flag:"🇸🇷"},
+    {code:"BZD", country:"Belize", flag:"🇧🇿"},
+    {code:"JMD", country:"Jamaica", flag:"🇯🇲"},
+    {code:"TTD", country:"Trinidad & Tobago", flag:"🇹🇹"},
+    {code:"BSD", country:"Bahamas", flag:"🇧🇸"},
+    {code:"ALL", country:"Albania", flag:"🇦🇱"},
+    {code:"MKD", country:"North Macedonia", flag:"🇲🇰"},
+    {code:"GEL", country:"Georgia", flag:"🇬🇪"},
+    {code:"MDL", country:"Moldova", flag:"🇲🇩"},
+    {code:"AZN", country:"Azerbaijan", flag:"🇦🇿"},
+    {code:"AMD", country:"Armenia", flag:"🇦🇲"},
+    {code:"KYD", country:"Cayman Islands", flag:"🇰🇾"},
+    {code:"MUR", country:"Mauritius", flag:"🇲🇺"},
+    {code:"MGA", country:"Madagascar", flag:"🇲🇬"},
+    {code:"MWK", country:"Malawi", flag:"🇲🇼"},
+    {code:"ZMW", country:"Zambia", flag:"🇿🇲"},
+    {code:"BBD", country:"Barbados", flag:"🇧🇧"},
+    {code:"SCR", country:"Seychelles", flag:"🇸🇨"},
+    {code:"NPR", country:"Nepal", flag:"🇳🇵"},
+    {code:"KGS", country:"Kyrgyzstan", flag:"🇰🇬"},
+    {code:"LAK", country:"Laos", flag:"🇱🇦"},
+    {code:"KHR", country:"Cambodia", flag:"🇰🇭"},
+    {code:"YER", country:"Yemen", flag:"🇾🇪"},
+    {code:"AFN", country:"Afghanistan", flag:"🇦🇫"},
+    {code:"IRR", country:"Iran", flag:"🇮🇷"},
+    {code:"SDG", country:"Sudan", flag:"🇸🇩"},
+    {code:"LYD", country:"Libya", flag:"🇱🇾"},
+    {code:"CDF", country:"DR Congo", flag:"🇨🇩"},
+    {code:"BIF", country:"Burundi", flag:"🇧🇮"},
+    {code:"RWF", country:"Rwanda", flag:"🇷🇼"},
+    {code:"DJF", country:"Djibouti", flag:"🇩🇯"},
+    {code:"SLL", country:"Sierra Leone", flag:"🇸🇱"},
+    {code:"GNF", country:"Guinea", flag:"🇬🇳"},
+    {code:"MZN", country:"Mozambique", flag:"🇲🇿"},
+    {code:"SZL", country:"Eswatini", flag:"🇸🇿"},
+    {code:"LSL", country:"Lesotho", flag:"🇱🇸"},
+    {code:"PGK", country:"Papua New Guinea", flag:"🇵🇬"},
+    {code:"FJD", country:"Fiji", flag:"🇫🇯"},
+    {code:"TOP", country:"Tonga", flag:"🇹🇴"},
+    {code:"WST", country:"Samoa", flag:"🇼🇸"},
+    {code:"VUV", country:"Vanuatu", flag:"🇻🇺"},
+    {code:"HTG", country:"Haiti", flag:"🇭🇹"},
+    {code:"HNL", country:"Honduras", flag:"🇭🇳"},
+    {code:"NIO", country:"Nicaragua", flag:"🇳🇮"},
+    {code:"BOB", country:"Bolivia", flag:"🇧🇴"},
+    {code:"PYG", country:"Paraguay", flag:"🇵🇾"},
+    {code:"GYD", country:"Guyana", flag:"🇬🇾"},
+    {code:"SOS", country:"Somalia", flag:"🇸🇴"},
+    {code:"BTN", country:"Bhutan", flag:"🇧🇹"},
+    {code:"TJS", country:"Tajikistan", flag:"🇹🇯"},
+    {code:"ISK", country:"Iceland", flag:"🇮🇸"},
+    {code:"FKP", country:"Falkland Islands", flag:"🇫🇰"},
+    {code:"SHP", country:"Saint Helena", flag:"🇸🇭"},
+    {code:"GIP", country:"Gibraltar", flag:"🇬🇮"},
+    {code:"ANG", country:"Curaçao", flag:"🇨🇼"},
+    {code:"AWG", country:"Aruba", flag:"🇦🇼"},
+    {code:"ERN", country:"Eritrea", flag:"🇪🇷"}
   ];
+
   const meta = {};
   metaArr.forEach(m => meta[m.code]=m);
   function labelFor(code){
@@ -608,17 +881,50 @@
   const rateInfo = document.getElementById('rateInfo');
   const pairInfo = document.getElementById('pairInfo');
 
-  // Populate dropdowns
-  codes.forEach(code=>{
-    const o1=document.createElement('option');
-    o1.value=code; o1.textContent=labelFor(code);
-    fromSel.appendChild(o1);
-    const o2=document.createElement('option');
-    o2.value=code; o2.textContent=labelFor(code);
-    toSel.appendChild(o2);
-  });
+  const fromSearch = document.getElementById('fromSearch');
+  const toSearch = document.getElementById('toSearch');
+
+  const historyPanel = document.getElementById('historyPanel');
+  const historyBtn = document.getElementById('historyBtn');
+  const historyClose = document.getElementById('historyClose');
+  const historyList = document.getElementById('historyList');
+  const historyEmpty = document.getElementById('historyEmpty');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+  const HISTORY_KEY = 'fx_history_v1';
+
+  // helper for populating selects with optional filter
+  function populateSelect(selectEl, searchTerm){
+    const term = (searchTerm || '').toLowerCase();
+    selectEl.innerHTML = '';
+    codes.forEach(code=>{
+      const label = labelFor(code);
+      if(!term || label.toLowerCase().includes(term)){
+        const o=document.createElement('option');
+        o.value=code;
+        o.textContent=label;
+        selectEl.appendChild(o);
+      }
+    });
+  }
+
+  // initial populate
+  populateSelect(fromSel,'');
+  populateSelect(toSel,'');
+
   fromSel.value="USD";
   toSel.value="INR";
+
+  function syncIfMissing(selectEl, fallbackCode){
+    // if search filtered out current value, ensure some option selected
+    if(!Array.from(selectEl.options).some(o=>o.value===selectEl.value)){
+      if(Array.from(selectEl.options).some(o=>o.value===fallbackCode)){
+        selectEl.value = fallbackCode;
+      } else if(selectEl.options.length>0){
+        selectEl.selectedIndex = 0;
+      }
+    }
+  }
 
   function updateMiniLabels(){
     fromLabel.textContent=labelFor(fromSel.value);
@@ -626,6 +932,41 @@
   }
   function formatNumber(num){
     return Number(num).toLocaleString(undefined,{maximumFractionDigits:2});
+  }
+
+  function saveToHistory(entry){
+    let list = [];
+    try{
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if(raw) list = JSON.parse(raw);
+    }catch(e){}
+    list.unshift(entry);
+    if(list.length>20) list = list.slice(0,20);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    renderHistory();
+  }
+
+  function renderHistory(){
+    let list=[];
+    try{
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if(raw) list = JSON.parse(raw);
+    }catch(e){}
+    historyList.innerHTML='';
+    if(!list.length){
+      historyEmpty.style.display='block';
+      return;
+    }
+    historyEmpty.style.display='none';
+    list.forEach(item=>{
+      const div=document.createElement('div');
+      div.className='history-item';
+      div.innerHTML = `
+        <div>${item.text}</div>
+        <div class="history-meta">${item.meta}</div>
+      `;
+      historyList.appendChild(div);
+    });
   }
 
   function convert(){
@@ -652,11 +993,20 @@
     const finalValue=baseValue*rates[outIndex];
 
     resultMain.textContent=`${formatNumber(amount)} ${fromCode} = ${formatNumber(finalValue.toFixed(2))} ${toCode}`;
-    resultSub.textContent=`Using offline ratio: 1 ${fromCode} ≈ ${(rates[outIndex]/rates[inIndex]).toFixed(4)} ${toCode}`;
+    const ratePair = (rates[outIndex]/rates[inIndex]).toFixed(4);
+    resultSub.textContent=`Using offline ratio: 1 ${fromCode} ≈ ${ratePair} ${toCode}`;
     resultBox.classList.add('show');
 
-    rateInfo.textContent=`Rate: 1 ${fromCode} ≈ ${(rates[outIndex]/rates[inIndex]).toFixed(4)} ${toCode}`;
+    rateInfo.textContent=`Rate: 1 ${fromCode} ≈ ${ratePair} ${toCode}`;
     pairInfo.textContent=`Pair: ${fromCode}/${toCode}`;
+
+    const now = new Date();
+    const stamp = now.toLocaleString();
+    const entry = {
+      text: `${formatNumber(amount)} ${fromCode} → ${formatNumber(finalValue.toFixed(2))} ${toCode}`,
+      meta: `${fromCode}/${toCode} · 1 ${fromCode} ≈ ${ratePair} ${toCode} · ${stamp}`
+    };
+    saveToHistory(entry);
   }
 
   swapBtn.addEventListener('click',()=>{
@@ -670,7 +1020,36 @@
   toSel.addEventListener('change',updateMiniLabels);
   updateMiniLabels();
 
-  // === REER DATA (2015–2025, from your message) ===
+  // search events
+  fromSearch.addEventListener('input',()=>{
+    const current = fromSel.value;
+    populateSelect(fromSel, fromSearch.value);
+    syncIfMissing(fromSel, current || "USD");
+    updateMiniLabels();
+  });
+  toSearch.addEventListener('input',()=>{
+    const current = toSel.value;
+    populateSelect(toSel, toSearch.value);
+    syncIfMissing(toSel, current || "INR");
+    updateMiniLabels();
+  });
+
+  // history panel events
+  historyBtn.addEventListener('click',()=>{
+    renderHistory();
+    historyPanel.classList.add('open');
+  });
+  historyClose.addEventListener('click',()=>{
+    historyPanel.classList.remove('open');
+  });
+  clearHistoryBtn.addEventListener('click',()=>{
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  });
+
+  renderHistory();
+
+  // === REER DATA (2015–2025) ===
   const reerYears=[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
 
   const reerData={
