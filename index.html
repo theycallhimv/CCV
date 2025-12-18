@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Currency Converter + REER Dashboard</title>
+  <title>Currency Converter + REER + Flag Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -455,8 +455,119 @@
       margin-top:2px;
     }
 
+    /* Flag Quiz page */
+    .quiz-layout{
+      display:grid;
+      grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);
+      gap:22px;
+    }
+    .quiz-card{
+      background:rgba(15,23,42,0.75);
+      border-radius:20px;
+      padding:16px 14px 14px;
+      border:1px solid rgba(148,163,184,0.55);
+    }
+    .quiz-flag{
+      font-size:3.2rem;
+      text-align:center;
+      margin:14px 0 10px;
+    }
+    .quiz-score{
+      font-size:0.8rem;
+      color:#CBD5F5;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .quiz-options{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .quiz-option{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,0.7);
+      background:rgba(15,23,42,0.9);
+      color:#E5E7EB;
+      font-size:0.82rem;
+      cursor:pointer;
+      text-align:center;
+      transition:.2s background,.2s border,.2s transform,.2s box-shadow;
+    }
+    .quiz-option:hover{
+      background:rgba(31,41,55,1);
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(0,0,0,0.45);
+    }
+    .quiz-option.correct{
+      border-color:#22C55E;
+      background:rgba(22,163,74,0.18);
+    }
+    .quiz-option.wrong{
+      border-color:#EF4444;
+      background:rgba(248,113,113,0.14);
+    }
+    .quiz-feedback{
+      margin-top:10px;
+      font-size:0.82rem;
+      min-height:18px;
+    }
+    .quiz-feedback.correct{
+      color:#6EE7B7;
+    }
+    .quiz-feedback.wrong{
+      color:#FCA5A5;
+    }
+    .quiz-hint{
+      font-size:0.76rem;
+      color:#9CA3AF;
+      margin-top:4px;
+    }
+    .quiz-side{
+      background:rgba(15,23,42,0.75);
+      border-radius:20px;
+      padding:16px 14px 14px;
+      border:1px solid rgba(148,163,184,0.55);
+      font-size:0.8rem;
+      color:#E5E7EB;
+    }
+    .quiz-side ul{
+      margin-left:14px;
+      margin-top:4px;
+    }
+    .quiz-side li{
+      margin-bottom:4px;
+    }
+
+    /* quiz progress indicator */
+    .quiz-progress-row{
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:0.78rem;
+      color:#CBD5F5;
+    }
+    .quiz-progress-bar{
+      width:100%;
+      height:6px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.9);
+      overflow:hidden;
+      border:1px solid rgba(148,163,184,0.6);
+    }
+    .quiz-progress-bar #quizProgressFill{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#4F46E5,#EC4899);
+      transition:width .25s ease-out;
+    }
+
     @media(max-width:880px){
-      .converter-layout,.reer-layout{
+      .converter-layout,.reer-layout,.quiz-layout{
         grid-template-columns:1fr;
       }
     }
@@ -465,6 +576,7 @@
       .top-title{font-size:1.3rem}
       .curr-row{grid-template-columns:1fr;gap:10px}
       .swap-btn{margin:2px auto}
+      .quiz-options{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -488,15 +600,16 @@
       <button class="history-btn" id="historyBtn" title="Show recent conversions">☰</button>
       <div>
         <div class="top-title">Currency Converter & REER Explorer</div>
-        <div class="top-sub">Page 1: 108‑currency converter • Page 2: Real Effective Exchange Rate (REER) overview and graphs.</div>
+        <div class="top-sub">Page 1: Converter • Page 2: REER • Page 3: Flag Quiz.</div>
       </div>
     </div>
-    <div class="pill">Offline converter · REER indices</div>
+    <div class="pill">Offline converter · REER indices · Flag quiz</div>
   </div>
 
   <div class="nav-main">
     <button class="active" data-page="page1">Page 1 – Converter</button>
     <button data-page="page2">Page 2 – REER Graphs</button>
+    <button data-page="page3">Page 3 – Flag Quiz</button>
   </div>
 
   <!-- PAGE 1: CONVERTER -->
@@ -675,6 +788,47 @@
             <div class="reer-chip">Index near 100 with mild appreciation after 2020, in line with changing oil and trade conditions.</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: FLAG QUIZ -->
+  <div id="page3" class="page">
+    <div class="quiz-layout">
+      <div class="quiz-card">
+        <div class="section-title">🏳️‍🌈 Flag Quiz</div>
+        <div class="section-sub">Guess the correct country for each flag. 10 questions per game.</div>
+
+        <div class="quiz-score">
+          <span id="quizScore">Score: 0 / 10</span>
+          <span id="quizStreak">Current streak: 0</span>
+        </div>
+
+        <div class="quiz-progress-row">
+          <span id="quizQuestionText">Question 1 of 10</span>
+          <div class="quiz-progress-bar">
+            <div id="quizProgressFill"></div>
+          </div>
+        </div>
+
+        <div class="quiz-flag" id="quizFlag">🇺🇳</div>
+
+        <div class="quiz-options" id="quizOptions"></div>
+
+        <div class="quiz-feedback" id="quizFeedback"></div>
+        <div class="quiz-hint">You get 10 questions. After that you’ll see your final score and can play again.</div>
+      </div>
+
+      <div class="quiz-side">
+        <div class="section-title">🎯 How this game works</div>
+        <p>Flags and country names come from the same 108‑currency list used by your converter, so everything stays consistent.</p>
+        <ul>
+          <li>Each game has exactly 10 random flags.</li>
+          <li>You get four country name options: one correct and three random wrong ones.</li>
+          <li>Options are shuffled so the correct one appears in different positions.</li>
+          <li>At the end you see “You got X out of 10” and a Play Again button.</li>
+        </ul>
+        <p class="note-small">Nice extra page for practice and fun inside the same project.</p>
       </div>
     </div>
   </div>
@@ -916,7 +1070,6 @@
   toSel.value="INR";
 
   function syncIfMissing(selectEl, fallbackCode){
-    // if search filtered out current value, ensure some option selected
     if(!Array.from(selectEl.options).some(o=>o.value===selectEl.value)){
       if(Array.from(selectEl.options).some(o=>o.value===fallbackCode)){
         selectEl.value = fallbackCode;
@@ -1107,6 +1260,153 @@
   }
 
   ["USD","INR","JPY","CNY","HKD","SGD","GBP","CHF","AUD","CAD"].forEach(makeReerChart);
+
+  // === FLAG QUIZ LOGIC (Page 3) ===
+  const quizFlag = document.getElementById('quizFlag');
+  const quizOptionsBox = document.getElementById('quizOptions');
+  const quizFeedback = document.getElementById('quizFeedback');
+  const quizScoreEl = document.getElementById('quizScore');
+  const quizStreakEl = document.getElementById('quizStreak');
+  const quizQuestionText = document.getElementById('quizQuestionText');
+  const quizProgressFill = document.getElementById('quizProgressFill');
+
+  const QUIZ_MAX_QUESTIONS = 10;
+
+  let quizCorrectCountry = null;
+  let totalQuestions = 0;
+  let totalCorrect = 0;
+  let currentStreak = 0;
+  let locked = false;
+
+  function shuffleArray(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()* (i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function pickRandomMeta(){
+    const idx = Math.floor(Math.random()*metaArr.length);
+    return metaArr[idx];
+  }
+
+  function generateQuizQuestion(){
+    if(totalQuestions >= QUIZ_MAX_QUESTIONS){
+      showQuizGameOver();
+      return;
+    }
+    locked = false;
+    quizFeedback.textContent='';
+    quizFeedback.className='quiz-feedback';
+
+    const q = pickRandomMeta();
+    quizCorrectCountry = q.country;
+    quizFlag.textContent = q.flag;
+
+    const used = new Set();
+    used.add(q.country);
+    const options = [q.country];
+
+    while(options.length < 4){
+      const candidate = pickRandomMeta().country;
+      if(!used.has(candidate)){
+        used.add(candidate);
+        options.push(candidate);
+      }
+    }
+
+    shuffleArray(options);
+
+    quizOptionsBox.innerHTML='';
+    options.forEach(countryName=>{
+      const btn = document.createElement('button');
+      btn.className='quiz-option';
+      btn.textContent = countryName;
+      btn.addEventListener('click',()=>handleQuizAnswer(btn,countryName));
+      quizOptionsBox.appendChild(btn);
+    });
+
+    updateQuizScoreUI();
+  }
+
+  function updateQuizScoreUI(){
+    quizScoreEl.textContent = `Score: ${totalCorrect} / ${QUIZ_MAX_QUESTIONS}`;
+    quizStreakEl.textContent = `Current streak: ${currentStreak}`;
+
+    const currentQ = Math.min(totalQuestions + 1, QUIZ_MAX_QUESTIONS);
+    quizQuestionText.textContent = `Question ${currentQ} of ${QUIZ_MAX_QUESTIONS}`;
+
+    const pct = (totalQuestions / QUIZ_MAX_QUESTIONS) * 100;
+    quizProgressFill.style.width = `${pct}%`;
+  }
+
+  function handleQuizAnswer(btn, chosenCountry){
+    if(locked) return;
+    locked = true;
+    totalQuestions++;
+
+    const optionButtons = quizOptionsBox.querySelectorAll('.quiz-option');
+    optionButtons.forEach(b=>b.disabled=true);
+
+    if(chosenCountry === quizCorrectCountry){
+      totalCorrect++;
+      currentStreak++;
+      btn.classList.add('correct');
+      quizFeedback.textContent='Correct! ✅';
+      quizFeedback.classList.add('correct');
+    } else {
+      currentStreak = 0;
+      btn.classList.add('wrong');
+      optionButtons.forEach(b=>{
+        if(b.textContent === quizCorrectCountry){
+          b.classList.add('correct');
+        }
+      });
+      quizFeedback.textContent=`Wrong ❌ – Correct: ${quizCorrectCountry}`;
+      quizFeedback.classList.add('wrong');
+    }
+
+    updateQuizScoreUI();
+
+    if(totalQuestions >= QUIZ_MAX_QUESTIONS){
+      setTimeout(showQuizGameOver, 600);
+    } else {
+      setTimeout(()=>{
+        generateQuizQuestion();
+      }, 900);
+    }
+  }
+
+  function showQuizGameOver(){
+    locked = true;
+    quizOptionsBox.innerHTML = '';
+    quizFlag.textContent = '🏁';
+    quizFeedback.textContent = `Game over – You got ${totalCorrect} out of ${QUIZ_MAX_QUESTIONS}.`;
+    quizFeedback.className = 'quiz-feedback correct';
+
+    quizQuestionText.textContent = `Finished: ${QUIZ_MAX_QUESTIONS} of ${QUIZ_MAX_QUESTIONS}`;
+    quizProgressFill.style.width = '100%';
+
+    const btn = document.createElement('button');
+    btn.textContent = 'Play again';
+    btn.className = 'quiz-option';
+    btn.style.marginTop = '10px';
+    btn.addEventListener('click', resetQuizGame);
+    quizOptionsBox.appendChild(btn);
+  }
+
+  function resetQuizGame(){
+    totalQuestions = 0;
+    totalCorrect = 0;
+    currentStreak = 0;
+    updateQuizScoreUI();
+    generateQuizQuestion();
+  }
+
+  // start first quiz question
+  updateQuizScoreUI();
+  generateQuizQuestion();
 </script>
 </body>
 </html>
