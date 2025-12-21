@@ -1408,6 +1408,56 @@
   updateQuizScoreUI();
   generateQuizQuestion();
 </script>
-</body>
-</html>
+<!-- 🔥 FIREBASE (COMPAT VERSION – SAFE) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
+<script>
+  // Firebase config (YOUR PROJECT)
+  var firebaseConfig = {
+    apiKey: "AIzaSyBsKBvOzZes08RcNt_SlEupbpdVeEUPI90",
+    authDomain: "currency-convertor-2d84a.firebaseapp.com",
+    projectId: "currency-convertor-2d84a",
+    storageBucket: "currency-convertor-2d84a.firebasestorage.app",
+    messagingSenderId: "709249899902",
+    appId: "1:709249899902:web:713520da2548a8d70b272f"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // 🔐 ADMIN LOGIN (simple & safe)
+  function adminLogin() {
+    var email = prompt("Admin email:");
+    var password = prompt("Admin password:");
+
+    if (!email || !password) return;
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(() => {
+        window.location.href = "admin.html";
+      })
+      .catch(err => {
+        alert("Login failed: " + err.message);
+      });
+  }
+</script>
+
+<!-- 🔑 Hidden Admin Button -->
+<button onclick="adminLogin()" 
+style="
+position:fixed;
+bottom:12px;
+right:12px;
+opacity:0.15;
+font-size:12px;
+padding:6px 10px;
+border-radius:999px;
+border:none;
+background:#111;
+color:#fff;
+z-index:999;">
+admin
+</button>
+</body>
+  </html>
