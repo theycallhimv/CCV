@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family:sans-serif;padding:20px">
+
+<h2>🔐 Admin Panel</h2>
+<p>You are logged in.</p>
+
+<button onclick="logout()">Logout</button>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyBsKBvOzZes08RcNt_SlEupbpdVeEUPI90",
+    authDomain: "currency-convertor-2d84a.firebaseapp.com",
+    projectId: "currency-convertor-2d84a",
+    storageBucket: "currency-convertor-2d84a.firebasestorage.app",
+    messagingSenderId: "709249899902",
+    appId: "1:709249899902:web:713520da2548a8d70b272f"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  // Protect page
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = "index.html";
+    }
+  });
+
+  function logout() {
+    firebase.auth().signOut().then(() => {
+      window.location.href = "index.html";
+    });
+  }
+</script>
+
+</body>
+</html>
