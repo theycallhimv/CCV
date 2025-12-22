@@ -1476,5 +1476,11 @@ admin
 <button class="admin-btn" onclick="window.location.href='admin.html'">
   Admin Login
 </button>
+  <script>
+  const savedRates = JSON.parse(localStorage.getItem("rates"));
+  if (savedRates) {
+    rates = savedRates; // assumes your converter uses `rates`
+  }
+  </script>
 </body>
   </html>
