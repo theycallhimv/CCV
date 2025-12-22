@@ -2,17 +2,44 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel</title>
+  <title>Admin – Exchange Rates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input { padding: 6px; margin: 4px 0; width: 100%; }
+    button { padding: 8px 12px; margin-top: 10px; }
+    table { width: 100%; max-width: 400px; }
+    td { padding: 4px; }
+  </style>
 </head>
-<body style="font-family:sans-serif;padding:20px">
+<body>
 
-<h2>🔐 Admin Panel</h2>
-<p>You are logged in.</p>
+<h2>🔐 Admin Login</h2>
 
-<button onclick="logout()">Logout</button>
+<div id="loginBox">
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="loginError" style="color:red"></p>
+</div>
 
-<!-- Firebase -->
+<div id="adminPanel" style="display:none">
+  <h2>✏️ Edit Exchange Rates</h2>
+
+  <table>
+    <tr><td>USD</td><td><input id="USD"></td></tr>
+    <tr><td>INR</td><td><input id="INR"></td></tr>
+    <tr><td>EUR</td><td><input id="EUR"></td></tr>
+    <tr><td>JPY</td><td><input id="JPY"></td></tr>
+    <tr><td>GBP</td><td><input id="GBP"></td></tr>
+  </table>
+
+  <button onclick="saveRates()">💾 Save Rates</button>
+  <br><br>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<!-- Firebase (SAFE COMPAT VERSION) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
@@ -25,20 +52,47 @@
     messagingSenderId: "709249899902",
     appId: "1:709249899902:web:713520da2548a8d70b272f"
   };
-
   firebase.initializeApp(firebaseConfig);
 
-  // Protect page
+  function login() {
+    firebase.auth().signInWithEmailAndPassword(
+      email.value,
+      password.value
+    ).catch(err => loginError.innerText = err.message);
+  }
+
   firebase.auth().onAuthStateChanged(user => {
-    if (!user) {
-      window.location.href = "index.html";
+    if (user) {
+      loginBox.style.display = "none";
+      adminPanel.style.display = "block";
+      loadRates();
     }
   });
 
+  function saveRates() {
+    const rates = {
+      USD: USD.value,
+      INR: INR.value,
+      EUR: EUR.value,
+      JPY: JPY.value,
+      GBP: GBP.value
+    };
+    localStorage.setItem("rates", JSON.stringify(rates));
+    alert("Rates saved!");
+  }
+
+  function loadRates() {
+    const rates = JSON.parse(localStorage.getItem("rates")) || {};
+    USD.value = rates.USD || 1;
+    INR.value = rates.INR || 83;
+    EUR.value = rates.EUR || 0.92;
+    JPY.value = rates.JPY || 145;
+    GBP.value = rates.GBP || 0.80;
+  }
+
   function logout() {
-    firebase.auth().signOut().then(() => {
-      window.location.href = "index.html";
-    });
+    firebase.auth().signOut();
+    location.reload();
   }
 </script>
 
