@@ -610,6 +610,7 @@
     <button class="active" data-page="page1">Page 1 – Converter</button>
     <button data-page="page2">Page 2 – REER Graphs</button>
     <button data-page="page3">Page 3 – Flag Quiz</button>
+       <button data-page="page4">Page 4 – Budget Planner</button>
   </div>
 
   <!-- PAGE 1: CONVERTER -->
@@ -832,6 +833,121 @@
       </div>
     </div>
   </div>
+  <!-- PAGE 4: BUDGET PLANNER -->
+<div id="page4" class="page">
+  <div class="quiz-layout" style="grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr);">
+    <!-- LEFT: main planner -->
+    <div class="quiz-card">
+      <div class="section-title">🧳 Trip Budget Planner</div>
+      <div class="section-sub">
+        Plan your total trip cost and see a per‑day budget in your destination currency.
+      </div>
+
+      <!-- Trip basics -->
+      <div class="amount-group">
+        <label for="bpTripName">Trip name</label>
+        <input id="bpTripName" type="text" class="amount-input"
+               placeholder="e.g., Goa with friends, Singapore family trip" style="text-align:left;font-size:0.85rem;">
+      </div>
+
+      <div class="curr-row">
+        <div>
+          <label>Home currency</label>
+          <div class="select-wrap">
+            <select id="bpFrom"></select>
+          </div>
+        </div>
+        <div></div>
+        <div>
+          <label>Destination currency</label>
+          <div class="select-wrap">
+            <select id="bpTo"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="amount-group" style="margin-top:10px;">
+        <label for="bpTotal">Total budget (home currency)</label>
+        <input id="bpTotal" type="number" class="amount-input" value="50000" min="0" step="0.01" />
+      </div>
+
+      <div class="amount-group">
+        <label for="bpDays">Trip length (days)</label>
+        <input id="bpDays" type="number" class="amount-input" value="5" min="1" step="1" />
+      </div>
+
+      <!-- Category sliders -->
+      <div class="divider"></div>
+      <div class="section-sub" style="margin-bottom:4px;">Split your budget by category (percentages)</div>
+
+      <div style="font-size:0.78rem;color:#E5E7EB;display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Stay (hotel)</span><span id="bpStayPctLabel">40%</span>
+          </div>
+          <input type="range" id="bpStayPct" min="0" max="100" value="40" />
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Food</span><span id="bpFoodPctLabel">30%</span>
+          </div>
+          <input type="range" id="bpFoodPct" min="0" max="100" value="30" />
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Transport</span><span id="bpTravelPctLabel">20%</span>
+          </div>
+          <input type="range" id="bpTravelPct" min="0" max="100" value="20" />
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Fun / Shopping</span><span id="bpFunPctLabel">10%</span>
+          </div>
+          <input type="range" id="bpFunPct" min="0" max="100" value="10" />
+        </div>
+        <div class="note-small" id="bpPctNote">
+          Total: 100%. Drag sliders to change the mix (the planner will auto‑normalize if needed).
+        </div>
+      </div>
+
+      <button class="convert-btn" id="bpCalcBtn" style="margin-top:10px;">Calculate budget</button>
+
+      <div class="result" id="bpResultBox">
+        <div class="result-main" id="bpResultMain"></div>
+        <div class="result-sub" id="bpResultSub"></div>
+      </div>
+
+      <div class="error" id="bpErrorBox"></div>
+    </div>
+
+    <!-- RIGHT: visual summary -->
+    <div class="quiz-side" style="display:flex;flex-direction:column;gap:10px;">
+      <div>
+        <div class="section-title">📊 Trip summary</div>
+        <p id="bpSummaryLine" style="font-size:0.8rem;color:#E5E7EB;">
+          Enter trip details to see your summary here.
+        </p>
+      </div>
+
+      <div>
+        <div class="section-title">🍽 Category breakdown</div>
+        <p class="note-small">Approximate amounts per category in destination currency.</p>
+
+        <div style="margin-top:6px;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;color:#E5E7EB;" id="bpBreakdownList">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">💡 Tip</div>
+        <p class="note-small">
+          Aim for a daily buffer of at least 10–15% above your planned per‑day budget to handle surprises like local transport or snacks. [web:184][web:189]
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <!-- Chart.js -->
@@ -1403,10 +1519,178 @@
     updateQuizScoreUI();
     generateQuizQuestion();
   }
+    // === BUDGET PLANNER (Page 4) ===
+  const bpFromSel = document.getElementById('bpFrom');
+  const bpToSel = document.getElementById('bpTo');
+  const bpTotalInput = document.getElementById('bpTotal');
+  const bpDaysInput = document.getElementById('bpDays');
+  const bpTripName = document.getElementById('bpTripName');
+
+  const bpStayPct = document.getElementById('bpStayPct');
+  const bpFoodPct = document.getElementById('bpFoodPct');
+  const bpTravelPct = document.getElementById('bpTravelPct');
+  const bpFunPct = document.getElementById('bpFunPct');
+
+  const bpStayPctLabel = document.getElementById('bpStayPctLabel');
+  const bpFoodPctLabel = document.getElementById('bpFoodPctLabel');
+  const bpTravelPctLabel = document.getElementById('bpTravelPctLabel');
+  const bpFunPctLabel = document.getElementById('bpFunPctLabel');
+  const bpPctNote = document.getElementById('bpPctNote');
+
+  const bpCalcBtn = document.getElementById('bpCalcBtn');
+  const bpResultBox = document.getElementById('bpResultBox');
+  const bpResultMain = document.getElementById('bpResultMain');
+  const bpResultSub = document.getElementById('bpResultSub');
+  const bpErrorBox = document.getElementById('bpErrorBox');
+
+  const bpSummaryLine = document.getElementById('bpSummaryLine');
+  const bpBreakdownList = document.getElementById('bpBreakdownList');
+
+  // Populate planner selects with same list as converter
+  if (bpFromSel && bpToSel) {
+    codes.forEach(code => {
+      const o1 = document.createElement('option');
+      o1.value = code;
+      o1.textContent = labelFor(code);
+      bpFromSel.appendChild(o1);
+
+      const o2 = document.createElement('option');
+      o2.value = code;
+      o2.textContent = labelFor(code);
+      bpToSel.appendChild(o2);
+    });
+    if (codes.includes('INR')) bpFromSel.value = 'INR';
+    if (codes.includes('USD')) bpToSel.value = 'USD';
+  }
+
+  function updatePctLabels() {
+    const s = Number(bpStayPct.value || 0);
+    const f = Number(bpFoodPct.value || 0);
+    const t = Number(bpTravelPct.value || 0);
+    const u = Number(bpFunPct.value || 0);
+    const total = s + f + t + u;
+
+    bpStayPctLabel.textContent = s + '%';
+    bpFoodPctLabel.textContent = f + '%';
+    bpTravelPctLabel.textContent = t + '%';
+    bpFunPctLabel.textContent = u + '%';
+
+    if (total === 100) {
+      bpPctNote.textContent = 'Total: 100%. Perfect balance.';
+      bpPctNote.style.color = '#9CA3AF';
+    } else {
+      bpPctNote.textContent = `Total: ${total}%. The planner will scale these proportions to 100%.`;
+      bpPctNote.style.color = '#FBBF24';
+    }
+  }
+
+  if (bpStayPct && bpFoodPct && bpTravelPct && bpFunPct) {
+    [bpStayPct, bpFoodPct, bpTravelPct, bpFunPct].forEach(input => {
+      input.addEventListener('input', updatePctLabels);
+    });
+    updatePctLabels();
+  }
+
+  function getRatePairForPlanner(fromCode, toCode) {
+    // If you later add liveRates/useLiveRates, you can prefer them here.
+    const inIndex = codes.indexOf(fromCode);
+    const outIndex = codes.indexOf(toCode);
+    if (inIndex === -1 || outIndex === -1) return null;
+    return rates[outIndex] / rates[inIndex];
+  }
+
+  function calcBudget() {
+    if (!bpTotalInput || !bpDaysInput) return;
+
+    bpErrorBox.textContent = '';
+    const total = parseFloat(bpTotalInput.value);
+    const days = parseInt(bpDaysInput.value, 10);
+    const fromCode = bpFromSel.value;
+    const toCode = bpToSel.value;
+    const tripName = (bpTripName.value || '').trim();
+
+    if (isNaN(total) || total <= 0) {
+      bpErrorBox.textContent = 'Enter a valid total amount greater than zero.';
+      bpResultBox.classList.remove('show');
+      return;
+    }
+    if (isNaN(days) || days <= 0) {
+      bpErrorBox.textContent = 'Enter a valid number of days.';
+      bpResultBox.classList.remove('show');
+      return;
+    }
+
+    const ratePair = getRatePairForPlanner(fromCode, toCode);
+    if (!ratePair) {
+      bpErrorBox.textContent = 'Rate not available for this pair.';
+      bpResultBox.classList.remove('show');
+      return;
+    }
+
+    const totalDest = total * ratePair;
+    const perDay = totalDest / days;
+
+    // Normalize categories
+    const s = Number(bpStayPct.value || 0);
+    const f = Number(bpFoodPct.value || 0);
+    const t = Number(bpTravelPct.value || 0);
+    const u = Number(bpFunPct.value || 0);
+    let sumPct = s + f + t + u || 1; // avoid divide by zero
+
+    const k = 100 / sumPct;
+    const ns = s * k, nf = f * k, nt = t * k, nu = u * k;
+
+    const stayAmt = totalDest * (ns / 100);
+    const foodAmt = totalDest * (nf / 100);
+    const travelAmt = totalDest * (nt / 100);
+    const funAmt = totalDest * (nu / 100);
+
+    bpResultMain.textContent =
+      `${formatNumber(total.toFixed(2))} ${fromCode} ≈ ${formatNumber(totalDest.toFixed(2))} ${toCode}`;
+    bpResultSub.textContent =
+      `For ${days} day(s), that is about ${formatNumber(perDay.toFixed(2))} ${toCode} per day using the same offline rates as the converter.`;
+    bpResultBox.classList.add('show');
+
+    const tripLabel = tripName || 'this trip';
+    bpSummaryLine.textContent =
+      `You planned ${tripLabel}: ${days} days, total about ${formatNumber(totalDest.toFixed(2))} ${toCode} (` +
+      `${formatNumber(perDay.toFixed(2))} ${toCode} per day).`;
+
+    if (bpBreakdownList) {
+      bpBreakdownList.innerHTML = '';
+      const rows = [
+        { label: 'Stay', pct: ns, amt: stayAmt, color: '#60A5FA' },
+        { label: 'Food', pct: nf, amt: foodAmt, color: '#22C55E' },
+        { label: 'Transport', pct: nt, amt: travelAmt, color: '#F97316' },
+        { label: 'Fun / Shopping', pct: nu, amt: funAmt, color: '#EC4899' }
+      ];
+      rows.forEach(r => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span>${r.label}</span>
+            <span>${r.pct.toFixed(1)}%</span>
+          </div>
+          <div style="height:6px;border-radius:999px;background:rgba(15,23,42,0.9);overflow:hidden;margin-bottom:2px;">
+            <div style="height:100%;width:${r.pct}%;background:${r.color};border-radius:999px;"></div>
+          </div>
+          <div class="note-small" style="margin-top:0;">
+            ≈ ${formatNumber(r.amt.toFixed(2))} ${toCode} for ${r.label.toLowerCase()}.
+          </div>
+        `;
+        bpBreakdownList.appendChild(div);
+      });
+    }
+  }
+
+  if (bpCalcBtn) {
+    bpCalcBtn.addEventListener('click', calcBudget);
+  }
+
 
   // start first quiz question
   updateQuizScoreUI();
   generateQuizQuestion();
 </script>
 </body>
-              </html>
+            </html>
