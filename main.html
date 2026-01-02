@@ -6,6 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+  .qr-section {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  background: radial-gradient(circle at top, #1f2937 0, #020617 60%);
+  text-align: center;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.85);
+}
+.qr-title { font-size: 0.95rem; margin-bottom: 10px; color: #E5E7EB; font-weight: 600; }
+.qr-note { font-size: 0.78rem; margin-top: 8px; color: #9CA3AF; }
+#qrCodeBox canvas, #qrCodeBox img {
+  margin: 0 auto;
+  border-radius: 12px;
+  padding: 8px;
+  background: #ffffff;
+}
+@media (max-width: 768px) {
+  .qr-section { display: none; }
+}
+
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       font-family:'Poppins',sans-serif;
@@ -600,7 +621,7 @@
       <button class="history-btn" id="historyBtn" title="Show recent conversions">☰</button>
       <div>
         <div class="top-title">Currency Converter & REER Explorer</div>
-        <div class="top-sub">Page 1: Converter • Page 2: REER • Page 3: Flag Quiz.</div>
+        <div class="top-sub"> Designed and Created by CSE-05's The Learners Team</div>
       </div>
     </div>
     <div class="pill">Offline converter · REER indices · Flag quiz</div>
@@ -617,8 +638,8 @@
   <div id="page1" class="page active">
     <div class="converter-layout">
       <div class="converter-card">
-        <div class="section-title">💱 Currency Converter</div>
-        <div class="section-sub">Same 108 currencies, logic and rates as in your C program (fixed offline ratios, not live market rates).</div>
+        <div class="section-title">💱 CURRENCY CONVERTER</div>
+        <div class="section-sub">Application Programming Interface based.</div>
 
         <div class="amount-group">
           <label for="amount">Amount</label>
@@ -669,7 +690,11 @@
 
         <div class="error" id="errorBox"></div>
       </div>
-
+      <div id="qrSection" class="qr-section">
+  <div class="qr-title">Open this converter on your phone</div>
+  <div id="qrCodeBox"></div>
+  <div class="qr-note">Scan with your mobile camera to open this same page.</div>
+</div>
       <div class="converter-card">
         <div class="section-title">ℹ️ How this converter works</div>
         <div class="section-sub">Internal logic mirrors your C program: amount is converted to a USD‑based value, then into the target currency using fixed ratios.</div>
@@ -677,9 +702,9 @@
           Steps:
         </p>
         <ul style="margin-left:14px;font-size:0.8rem;color:#E5E7EB;">
-          <li>Each of the 108 currencies has a rate that tells how many units equal 1 USD in your offline table.</li>
-          <li>The program divides the input amount by its currency’s rate to get a base USD amount, then multiplies by the output currency’s rate to convert.</li>
-          <li>Because the rates are fixed, results are consistent but do not update with real‑time markets.</li>
+          <li>Our currency converter is designed to deliver accurate and reliable exchange rate conversions by primarily relying on the Fawaz Currency API. When a user selects two currencies and enters an amount, the converter sends a request to this API, which provides real-time or near–real-time exchange rate data. This ensures that the converted value reflects the latest market conditions, making the tool suitable for everyday financial reference and learning purposes.</li>
+          <li>Behind the scenes, the application processes the API response, extracts the required exchange rate, and performs the conversion instantly on the client side. The interface then formats and displays the result clearly for the user. This API-first approach allows your currency converter to stay dynamic and scalable, as any updates in global exchange rates are automatically reflected without needing frequent manual updates to the code.</li>
+          <li>To maintain reliability, your currency converter also includes a fallback mechanism. If the Fawaz Currency API fails to respond, returns an error, or is temporarily unavailable, the system automatically switches to a set of manually stored exchange rate values. This ensures that the converter continues to function without interruption, providing users with reasonable and consistent conversion results even during API downtime.</li>
         </ul>
         <p class="note-small">
           For live FX, actual APIs or central‑bank data are needed, but this project focuses on algorithm and interface using static reference values.
@@ -949,6 +974,8 @@
 </div>
 
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <!-- QRCode.js [web:159][web:148] -->
+
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -964,7 +991,7 @@
     });
   });
 
-  // === CONVERTER DATA (FROM YOUR C CODE) ===
+  // === CURRENCY LIST + STATIC RATES (fallback) ===
   const codes = [
     "USD","EUR","JPY","GBP","AUD","CAD","CHF","CNY","HKD","NZD",
     "SEK","KRW","SGD","NOK","MXN","INR","RUB","ZAR","TRY","BRL",
@@ -998,7 +1025,6 @@
     6388,209.22,569.58,90.50,9.229,126.40,0.7478,0.7485,0.7478,1.790,1.790,15
   ];
 
-  // === FULL 108‑CURRENCY META ARR ===
   const metaArr = [
     {code:"USD", country:"United States", flag:"🇺🇸"},
     {code:"EUR", country:"European Union", flag:"🇪🇺"},
@@ -1129,14 +1155,13 @@
   ];
 
   const meta = {};
-  metaArr.forEach(m => meta[m.code]=m);
+  metaArr.forEach(m => meta[m.code] = m);
   function labelFor(code){
     const m = meta[code];
-    if(m) return `${m.flag}  ${code} — ${m.country}`;
-    return code;
+    return m ? `${m.flag}  ${code} — ${m.country}` : code;
   }
 
-  // Converter DOM
+  // === Converter DOM ===
   const fromSel = document.getElementById('fromCurrency');
   const toSel = document.getElementById('toCurrency');
   const fromLabel = document.getElementById('fromLabel');
@@ -1160,30 +1185,22 @@
   const historyList = document.getElementById('historyList');
   const historyEmpty = document.getElementById('historyEmpty');
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const HISTORY_KEY = 'fx_history_v1_fawaz_plus_fallback';
 
-  const HISTORY_KEY = 'fx_history_v1';
-
-  // helper for populating selects with optional filter
+  // === Populate selects + search ===
   function populateSelect(selectEl, searchTerm){
     const term = (searchTerm || '').toLowerCase();
     selectEl.innerHTML = '';
     codes.forEach(code=>{
       const label = labelFor(code);
-      if(!term || label.toLowerCase().includes(term)){
-        const o=document.createElement('option');
-        o.value=code;
-        o.textContent=label;
+      if (!term || label.toLowerCase().includes(term)) {
+        const o = document.createElement('option');
+        o.value = code;
+        o.textContent = label;
         selectEl.appendChild(o);
       }
     });
   }
-
-  // initial populate
-  populateSelect(fromSel,'');
-  populateSelect(toSel,'');
-
-  fromSel.value="USD";
-  toSel.value="INR";
 
   function syncIfMissing(selectEl, fallbackCode){
     if(!Array.from(selectEl.options).some(o=>o.value===selectEl.value)){
@@ -1195,10 +1212,31 @@
     }
   }
 
+  populateSelect(fromSel,'');
+  populateSelect(toSel,'');
+  fromSel.value = 'USD';
+  toSel.value = 'INR';
+
   function updateMiniLabels(){
-    fromLabel.textContent=labelFor(fromSel.value);
-    toLabel.textContent=labelFor(toSel.value);
+    fromLabel.textContent = labelFor(fromSel.value);
+    toLabel.textContent = labelFor(toSel.value);
   }
+  updateMiniLabels();
+
+  fromSearch.addEventListener('input',()=>{
+    const current = fromSel.value;
+    populateSelect(fromSel, fromSearch.value);
+    syncIfMissing(fromSel, current || 'USD');
+    updateMiniLabels();
+  });
+  toSearch.addEventListener('input',()=>{
+    const current = toSel.value;
+    populateSelect(toSel, toSearch.value);
+    syncIfMissing(toSel, current || 'INR');
+    updateMiniLabels();
+  });
+
+  // === History ===
   function formatNumber(num){
     return Number(num).toLocaleString(undefined,{maximumFractionDigits:2});
   }
@@ -1238,72 +1276,6 @@
     });
   }
 
-  function convert(){
-    const amount=parseFloat(amountInput.value);
-    errorBox.textContent="";
-    if(isNaN(amount)||amount<=0){
-      errorBox.textContent="Please enter a valid amount greater than zero.";
-      resultBox.classList.remove('show');
-      return;
-    }
-    const fromCode=fromSel.value;
-    const toCode=toSel.value;
-    const inIndex=codes.indexOf(fromCode);
-    const outIndex=codes.indexOf(toCode);
-    if(inIndex===-1){
-      errorBox.textContent="Invalid input currency.";
-      resultBox.classList.remove('show');return;
-    }
-    if(outIndex===-1){
-      errorBox.textContent="Invalid output currency.";
-      resultBox.classList.remove('show');return;
-    }
-    const baseValue=amount/rates[inIndex];
-    const finalValue=baseValue*rates[outIndex];
-
-    resultMain.textContent=`${formatNumber(amount)} ${fromCode} = ${formatNumber(finalValue.toFixed(2))} ${toCode}`;
-    const ratePair = (rates[outIndex]/rates[inIndex]).toFixed(4);
-    resultSub.textContent=`Using offline ratio: 1 ${fromCode} ≈ ${ratePair} ${toCode}`;
-    resultBox.classList.add('show');
-
-    rateInfo.textContent=`Rate: 1 ${fromCode} ≈ ${ratePair} ${toCode}`;
-    pairInfo.textContent=`Pair: ${fromCode}/${toCode}`;
-
-    const now = new Date();
-    const stamp = now.toLocaleString();
-    const entry = {
-      text: `${formatNumber(amount)} ${fromCode} → ${formatNumber(finalValue.toFixed(2))} ${toCode}`,
-      meta: `${fromCode}/${toCode} · 1 ${fromCode} ≈ ${ratePair} ${toCode} · ${stamp}`
-    };
-    saveToHistory(entry);
-  }
-
-  swapBtn.addEventListener('click',()=>{
-    const tmp=fromSel.value;
-    fromSel.value=toSel.value;
-    toSel.value=tmp;
-    updateMiniLabels();
-  });
-  convertBtn.addEventListener('click',convert);
-  fromSel.addEventListener('change',updateMiniLabels);
-  toSel.addEventListener('change',updateMiniLabels);
-  updateMiniLabels();
-
-  // search events
-  fromSearch.addEventListener('input',()=>{
-    const current = fromSel.value;
-    populateSelect(fromSel, fromSearch.value);
-    syncIfMissing(fromSel, current || "USD");
-    updateMiniLabels();
-  });
-  toSearch.addEventListener('input',()=>{
-    const current = toSel.value;
-    populateSelect(toSel, toSearch.value);
-    syncIfMissing(toSel, current || "INR");
-    updateMiniLabels();
-  });
-
-  // history panel events
   historyBtn.addEventListener('click',()=>{
     renderHistory();
     historyPanel.classList.add('open');
@@ -1315,12 +1287,108 @@
     localStorage.removeItem(HISTORY_KEY);
     renderHistory();
   });
-
   renderHistory();
 
-  // === REER DATA (2015–2025) ===
-  const reerYears=[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  // === Fawaz API helper + manual fallback ===
+  // Free currency API via jsDelivr + pages.dev, daily updates. [web:102][web:14]
+  async function getRateFawazWithFallback(fromCode, toCode){
+    const from = fromCode.toLowerCase();
+    const to = toCode.toLowerCase();
 
+    const primary = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${from}.json`;
+    const backup  = `https://currency-api.pages.dev/latest/v1/currencies/${from}.json`;
+
+    async function fetchJson(url){
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    try{
+      let data;
+      try{
+        data = await fetchJson(primary);
+      } catch {
+        data = await fetchJson(backup);
+      }
+      if (data[from] && typeof data[from][to] === 'number') {
+        return { rate: data[from][to], source: 'live' };
+      }
+      throw new Error('No rate in Fawaz data');
+    } catch(e){
+      console.warn('Fawaz API failed, falling back to manual rates[]:', e);
+    }
+
+    const iFrom = codes.indexOf(fromCode.toUpperCase());
+    const iTo   = codes.indexOf(toCode.toUpperCase());
+    if (iFrom === -1 || iTo === -1) {
+      throw new Error('No manual fallback for this currency code');
+    }
+    const fallbackRate = rates[iTo] / rates[iFrom];
+    return { rate: fallbackRate, source: 'offline' };
+  }
+
+  // === Converter (big main result + explicit 1 XXX = Y YYY line) ===
+  async function convert(){
+    errorBox.textContent = '';
+    const amount = parseFloat(amountInput.value);
+
+    if (isNaN(amount) || amount <= 0) {
+      errorBox.textContent = 'Please enter a valid amount greater than zero.';
+      resultBox.classList.remove('show');
+      return;
+    }
+
+    const fromCode = fromSel.value;
+    const toCode = toSel.value;
+
+    try {
+      const { rate, source } = await getRateFawazWithFallback(fromCode, toCode);
+      const finalValue = amount * rate;
+
+      const sourceText = source === 'live'
+        ? 'Live daily rate (Fawaz currency API)'
+        : 'Offline static rate (manual table)';
+
+      const pairLine = `1 ${fromCode} = ${rate.toFixed(4)} ${toCode}`;
+
+      resultMain.textContent =
+        `${formatNumber(amount)} ${fromCode} = ${formatNumber(finalValue.toFixed(2))} ${toCode}`;
+      resultMain.style.fontSize = '2.2rem';
+      resultMain.style.fontWeight = '700';
+
+      resultSub.textContent = `${pairLine} · ${sourceText}`;
+
+      resultBox.classList.add('show');
+      rateInfo.textContent = pairLine;
+      pairInfo.textContent = `Pair: ${fromCode}/${toCode}`;
+
+      const now = new Date();
+      const stamp = now.toLocaleString();
+      const entry = {
+        text: `${formatNumber(amount)} ${fromCode} → ${formatNumber(finalValue.toFixed(2))} ${toCode}`,
+        meta: `${fromCode}/${toCode} · ${pairLine} · ${sourceText} · ${stamp}`
+      };
+      saveToHistory(entry);
+    } catch (err) {
+      console.error(err);
+      resultBox.classList.remove('show');
+      errorBox.textContent = 'Could not get any rate (live or manual) for this pair.';
+    }
+  }
+
+  convertBtn.addEventListener('click', convert);
+  swapBtn.addEventListener('click',()=>{
+    const tmp = fromSel.value;
+    fromSel.value = toSel.value;
+    toSel.value = tmp;
+    updateMiniLabels();
+  });
+  fromSel.addEventListener('change', updateMiniLabels);
+  toSel.addEventListener('change', updateMiniLabels);
+
+  // === REER ===
+  const reerYears=[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
   const reerData={
     USD:[100,101,102,103,104,100,103,107,106,108,107],
     INR:[100,102,105,104,103,101,104,107,108,109,108],
@@ -1333,18 +1401,10 @@
     AUD:[101,100,101,100,99,98,99,97,98,99,100],
     CAD:[100,99,100,101,100,98,99,100,101,102,103]
   };
-
   const reerColors={
-    USD:"#60A5FA",
-    INR:"#22C55E",
-    JPY:"#F97316",
-    CNY:"#FACC15",
-    HKD:"#A855F7",
-    SGD:"#2DD4BF",
-    GBP:"#FB7185",
-    CHF:"#6366F1",
-    AUD:"#FBBF24",
-    CAD:"#14B8A6"
+    USD:"#60A5FA", INR:"#22C55E", JPY:"#F97316", CNY:"#FACC15",
+    HKD:"#A855F7", SGD:"#2DD4BF", GBP:"#FB7185", CHF:"#6366F1",
+    AUD:"#FBBF24", CAD:"#14B8A6"
   };
 
   function makeReerChart(code){
@@ -1374,10 +1434,9 @@
       }
     });
   }
-
   ["USD","INR","JPY","CNY","HKD","SGD","GBP","CHF","AUD","CAD"].forEach(makeReerChart);
 
-  // === FLAG QUIZ LOGIC (Page 3) ===
+  // === FLAG QUIZ ===
   const quizFlag = document.getElementById('quizFlag');
   const quizOptionsBox = document.getElementById('quizOptions');
   const quizFeedback = document.getElementById('quizFeedback');
@@ -1387,7 +1446,6 @@
   const quizProgressFill = document.getElementById('quizProgressFill');
 
   const QUIZ_MAX_QUESTIONS = 10;
-
   let quizCorrectCountry = null;
   let totalQuestions = 0;
   let totalCorrect = 0;
@@ -1401,13 +1459,20 @@
     }
     return arr;
   }
-
   function pickRandomMeta(){
     const idx = Math.floor(Math.random()*metaArr.length);
     return metaArr[idx];
   }
-
+  function updateQuizScoreUI(){
+    quizScoreEl.textContent = `Score: ${totalCorrect} / ${QUIZ_MAX_QUESTIONS}`;
+    quizStreakEl.textContent = `Current streak: ${currentStreak}`;
+    const currentQ = Math.min(totalQuestions + 1, QUIZ_MAX_QUESTIONS);
+    quizQuestionText.textContent = `Question ${currentQ} of ${QUIZ_MAX_QUESTIONS}`;
+    const pct = (totalQuestions / QUIZ_MAX_QUESTIONS) * 100;
+    quizProgressFill.style.width = `${pct}%`;
+  }
   function generateQuizQuestion(){
+    if(!quizFlag) return;
     if(totalQuestions >= QUIZ_MAX_QUESTIONS){
       showQuizGameOver();
       return;
@@ -1423,15 +1488,13 @@
     const used = new Set();
     used.add(q.country);
     const options = [q.country];
-
     while(options.length < 4){
-      const candidate = pickRandomMeta().country;
-      if(!used.has(candidate)){
-        used.add(candidate);
-        options.push(candidate);
+      const cand = pickRandomMeta().country;
+      if(!used.has(cand)){
+        used.add(cand);
+        options.push(cand);
       }
     }
-
     shuffleArray(options);
 
     quizOptionsBox.innerHTML='';
@@ -1445,23 +1508,10 @@
 
     updateQuizScoreUI();
   }
-
-  function updateQuizScoreUI(){
-    quizScoreEl.textContent = `Score: ${totalCorrect} / ${QUIZ_MAX_QUESTIONS}`;
-    quizStreakEl.textContent = `Current streak: ${currentStreak}`;
-
-    const currentQ = Math.min(totalQuestions + 1, QUIZ_MAX_QUESTIONS);
-    quizQuestionText.textContent = `Question ${currentQ} of ${QUIZ_MAX_QUESTIONS}`;
-
-    const pct = (totalQuestions / QUIZ_MAX_QUESTIONS) * 100;
-    quizProgressFill.style.width = `${pct}%`;
-  }
-
   function handleQuizAnswer(btn, chosenCountry){
     if(locked) return;
     locked = true;
     totalQuestions++;
-
     const optionButtons = quizOptionsBox.querySelectorAll('.quiz-option');
     optionButtons.forEach(b=>b.disabled=true);
 
@@ -1482,25 +1532,19 @@
       quizFeedback.textContent=`Wrong ❌ – Correct: ${quizCorrectCountry}`;
       quizFeedback.classList.add('wrong');
     }
-
     updateQuizScoreUI();
-
     if(totalQuestions >= QUIZ_MAX_QUESTIONS){
       setTimeout(showQuizGameOver, 600);
     } else {
-      setTimeout(()=>{
-        generateQuizQuestion();
-      }, 900);
+      setTimeout(generateQuizQuestion, 900);
     }
   }
-
   function showQuizGameOver(){
     locked = true;
     quizOptionsBox.innerHTML = '';
     quizFlag.textContent = '🏁';
     quizFeedback.textContent = `Game over – You got ${totalCorrect} out of ${QUIZ_MAX_QUESTIONS}.`;
     quizFeedback.className = 'quiz-feedback correct';
-
     quizQuestionText.textContent = `Finished: ${QUIZ_MAX_QUESTIONS} of ${QUIZ_MAX_QUESTIONS}`;
     quizProgressFill.style.width = '100%';
 
@@ -1511,7 +1555,6 @@
     btn.addEventListener('click', resetQuizGame);
     quizOptionsBox.appendChild(btn);
   }
-
   function resetQuizGame(){
     totalQuestions = 0;
     totalCorrect = 0;
@@ -1519,7 +1562,12 @@
     updateQuizScoreUI();
     generateQuizQuestion();
   }
-    // === BUDGET PLANNER (Page 4) ===
+  if (quizFlag) {
+    updateQuizScoreUI();
+    generateQuizQuestion();
+  }
+
+  // === BUDGET PLANNER ===
   const bpFromSel = document.getElementById('bpFrom');
   const bpToSel = document.getElementById('bpTo');
   const bpTotalInput = document.getElementById('bpTotal');
@@ -1546,60 +1594,52 @@
   const bpSummaryLine = document.getElementById('bpSummaryLine');
   const bpBreakdownList = document.getElementById('bpBreakdownList');
 
-  // Populate planner selects with same list as converter
   if (bpFromSel && bpToSel) {
-    codes.forEach(code => {
-      const o1 = document.createElement('option');
-      o1.value = code;
-      o1.textContent = labelFor(code);
+    codes.forEach(code=>{
+      const o1=document.createElement('option');
+      o1.value=code;
+      o1.textContent=labelFor(code);
       bpFromSel.appendChild(o1);
 
-      const o2 = document.createElement('option');
-      o2.value = code;
-      o2.textContent = labelFor(code);
+      const o2=document.createElement('option');
+      o2.value=code;
+      o2.textContent=labelFor(code);
       bpToSel.appendChild(o2);
     });
-    if (codes.includes('INR')) bpFromSel.value = 'INR';
-    if (codes.includes('USD')) bpToSel.value = 'USD';
+    if(codes.includes('INR')) bpFromSel.value='INR';
+    if(codes.includes('USD')) bpToSel.value='USD';
   }
 
   function updatePctLabels() {
-    const s = Number(bpStayPct.value || 0);
-    const f = Number(bpFoodPct.value || 0);
-    const t = Number(bpTravelPct.value || 0);
-    const u = Number(bpFunPct.value || 0);
+    const s = Number(bpStayPct?.value || 0);
+    const f = Number(bpFoodPct?.value || 0);
+    const t = Number(bpTravelPct?.value || 0);
+    const u = Number(bpFunPct?.value || 0);
     const total = s + f + t + u;
 
-    bpStayPctLabel.textContent = s + '%';
-    bpFoodPctLabel.textContent = f + '%';
-    bpTravelPctLabel.textContent = t + '%';
-    bpFunPctLabel.textContent = u + '%';
+    if (bpStayPctLabel) bpStayPctLabel.textContent = s + '%';
+    if (bpFoodPctLabel) bpFoodPctLabel.textContent = f + '%';
+    if (bpTravelPctLabel) bpTravelPctLabel.textContent = t + '%';
+    if (bpFunPctLabel) bpFunPctLabel.textContent = u + '%';
 
-    if (total === 100) {
-      bpPctNote.textContent = 'Total: 100%. Perfect balance.';
-      bpPctNote.style.color = '#9CA3AF';
-    } else {
-      bpPctNote.textContent = `Total: ${total}%. The planner will scale these proportions to 100%.`;
-      bpPctNote.style.color = '#FBBF24';
+    if (bpPctNote) {
+      if (total === 100) {
+        bpPctNote.textContent = 'Total: 100%. Perfect balance.';
+        bpPctNote.style.color = '#9CA3AF';
+      } else {
+        bpPctNote.textContent = `Total: ${total}%. The planner will scale these proportions to 100%.`;
+        bpPctNote.style.color = '#FBBF24';
+      }
     }
   }
-
   if (bpStayPct && bpFoodPct && bpTravelPct && bpFunPct) {
-    [bpStayPct, bpFoodPct, bpTravelPct, bpFunPct].forEach(input => {
+    [bpStayPct, bpFoodPct, bpTravelPct, bpFunPct].forEach(input=>{
       input.addEventListener('input', updatePctLabels);
     });
     updatePctLabels();
   }
 
-  function getRatePairForPlanner(fromCode, toCode) {
-    // If you later add liveRates/useLiveRates, you can prefer them here.
-    const inIndex = codes.indexOf(fromCode);
-    const outIndex = codes.indexOf(toCode);
-    if (inIndex === -1 || outIndex === -1) return null;
-    return rates[outIndex] / rates[inIndex];
-  }
-
-  function calcBudget() {
+  async function calcBudget() {
     if (!bpTotalInput || !bpDaysInput) return;
 
     bpErrorBox.textContent = '';
@@ -1620,22 +1660,26 @@
       return;
     }
 
-    const ratePair = getRatePairForPlanner(fromCode, toCode);
-    if (!ratePair) {
-      bpErrorBox.textContent = 'Rate not available for this pair.';
+    let rate, rateSource;
+    try {
+      const r = await getRateFawazWithFallback(fromCode, toCode);
+      rate = r.rate;
+      rateSource = r.source;
+    } catch (e) {
+      console.error(e);
+      bpErrorBox.textContent = 'Could not get any rate for this pair.';
       bpResultBox.classList.remove('show');
       return;
     }
 
-    const totalDest = total * ratePair;
+    const totalDest = total * rate;
     const perDay = totalDest / days;
 
-    // Normalize categories
-    const s = Number(bpStayPct.value || 0);
-    const f = Number(bpFoodPct.value || 0);
-    const t = Number(bpTravelPct.value || 0);
-    const u = Number(bpFunPct.value || 0);
-    let sumPct = s + f + t + u || 1; // avoid divide by zero
+    const s = Number(bpStayPct?.value || 0);
+    const f = Number(bpFoodPct?.value || 0);
+    const t = Number(bpTravelPct?.value || 0);
+    const u = Number(bpFunPct?.value || 0);
+    let sumPct = s + f + t + u || 1;
 
     const k = 100 / sumPct;
     const ns = s * k, nf = f * k, nt = t * k, nu = u * k;
@@ -1645,16 +1689,20 @@
     const travelAmt = totalDest * (nt / 100);
     const funAmt = totalDest * (nu / 100);
 
+    const sourceText = rateSource === 'live'
+      ? 'using live daily FX (Fawaz API)'
+      : 'using offline fallback rates';
+
     bpResultMain.textContent =
       `${formatNumber(total.toFixed(2))} ${fromCode} ≈ ${formatNumber(totalDest.toFixed(2))} ${toCode}`;
     bpResultSub.textContent =
-      `For ${days} day(s), that is about ${formatNumber(perDay.toFixed(2))} ${toCode} per day using the same offline rates as the converter.`;
+      `For ${days} day(s), that is about ${formatNumber(perDay.toFixed(2))} ${toCode} per day ${sourceText}.`;
     bpResultBox.classList.add('show');
 
     const tripLabel = tripName || 'this trip';
     bpSummaryLine.textContent =
       `You planned ${tripLabel}: ${days} days, total about ${formatNumber(totalDest.toFixed(2))} ${toCode} (` +
-      `${formatNumber(perDay.toFixed(2))} ${toCode} per day).`;
+      `${formatNumber(perDay.toFixed(2))} ${toCode} per day, ${sourceText}).`;
 
     if (bpBreakdownList) {
       bpBreakdownList.innerHTML = '';
@@ -1664,8 +1712,8 @@
         { label: 'Transport', pct: nt, amt: travelAmt, color: '#F97316' },
         { label: 'Fun / Shopping', pct: nu, amt: funAmt, color: '#EC4899' }
       ];
-      rows.forEach(r => {
-        const div = document.createElement('div');
+      rows.forEach(r=>{
+        const div=document.createElement('div');
         div.innerHTML = `
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
             <span>${r.label}</span>
@@ -1687,10 +1735,23 @@
     bpCalcBtn.addEventListener('click', calcBudget);
   }
 
-
-  // start first quiz question
-  updateQuizScoreUI();
-  generateQuizQuestion();
+  // === QR CODE FOR "OPEN ON MOBILE" ===
+  // Generates a QR for the current page URL into #qrCodeBox. [web:159][web:148]
+  (function setupQrCode(){
+    const box = document.getElementById('qrCodeBox');
+    if (!box) return;
+    if (typeof QRCode === 'undefined') {
+      console.warn('QRCode library not loaded');
+      return;
+    }
+    const url = "https://theycallhimv.github.io/CCV/";
+    new QRCode(box, {
+      text: url,
+      width: 160,
+      height: 160,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  })();
 </script>
-</body>
-            </html>
